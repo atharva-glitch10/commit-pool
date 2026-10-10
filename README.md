@@ -13,7 +13,8 @@ Built at **Monad Blitz Pune V3** (10 Oct 2026), idea-board track *Commitment con
 | **Contract** | [`0x59747B1A995EF0Cb01CA6A97CE0aaeA38b2474F4`](https://testnet.monadvision.com/address/0x59747B1A995EF0Cb01CA6A97CE0aaeA38b2474F4) |
 | **Explorer** | <https://testnet.monadvision.com> |
 | **Source** | <https://github.com/atharva-glitch10/commit-pool> |
-| **Posts on X** | [Post 1](https://x.com/AtharvaPaw25/status/2108896348133310637) · [Post 2](https://x.com/AtharvaPaw25/status/2108886990561394875) |
+| **Demo video** | [Watch on X](https://x.com/AtharvaPaw25/status/2108896348133310637) |
+| **Ad video** | [Watch on X](https://x.com/AtharvaPaw25/status/2108886990561394875) |
 | **Status** | Hackathon prototype. Testnet only, **not audited** |
 
 ---
@@ -374,8 +375,8 @@ The protocol takes a fee **only on forfeited stakes** (10% at deploy, hard-cappe
 | Live app | <https://commit-pool-wutn.vercel.app> |
 | Contract (Monad Testnet) | [`0x59747B1A995EF0Cb01CA6A97CE0aaeA38b2474F4`](https://testnet.monadvision.com/address/0x59747B1A995EF0Cb01CA6A97CE0aaeA38b2474F4) |
 | Source verification | [Sourcify full match](https://repo.sourcify.dev/10143/0x59747B1A995EF0Cb01CA6A97CE0aaeA38b2474F4) |
-| X post 1 | <https://x.com/AtharvaPaw25/status/2108896348133310637> |
-| X post 2 | <https://x.com/AtharvaPaw25/status/2108886990561394875> |
+| Demo video (X) | <https://x.com/AtharvaPaw25/status/2108896348133310637> |
+| Ad video (X) | <https://x.com/AtharvaPaw25/status/2108886990561394875> |
 
 Built at Monad Blitz Pune V3.
 
