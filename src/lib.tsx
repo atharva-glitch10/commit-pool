@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { BaseError, formatEther } from 'viem'
 import { abi } from './abi'
 import { EXPLORER, POOL_ADDRESS } from './config'
+import { parseGoal, type Policy } from './shared'
 
 export const base = { address: POOL_ADDRESS, abi } as const
 
@@ -78,13 +79,16 @@ export function TxLine({ s }: { s: TxState }) {
 export type PoolRow = {
   id: bigint; creator: `0x${string}`; stake: bigint; start: number; day: number; win: number; days: number
   maxMembers: number; memberCount: number; winners: number; settled: boolean; cancelled: boolean; payout: bigint; goal: string
+  /** verification policy parsed from the on-chain goal tag */
+  policy: Policy
 }
 export function toPool(id: bigint, r: readonly unknown[]): PoolRow {
   const [creator, stake, startTime, dayLength, window_, numDays, maxMembers, memberCount, winners, settled, cancelled, payout, goal] =
     r as [`0x${string}`, bigint, bigint, number, number, number, number, number, number, boolean, boolean, bigint, string]
   return {
     id, creator, stake, start: Number(startTime), day: Number(dayLength), win: Number(window_), days: Number(numDays),
-    maxMembers: Number(maxMembers), memberCount: Number(memberCount), winners: Number(winners), settled, cancelled, payout, goal,
+    maxMembers: Number(maxMembers), memberCount: Number(memberCount), winners: Number(winners), settled, cancelled, payout,
+    goal: parseGoal(goal).text, policy: parseGoal(goal),
   }
 }
 export const deadlineOf = (p: PoolRow, d: number) => p.start + d * p.day

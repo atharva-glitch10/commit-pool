@@ -1,0 +1,25 @@
+{
+  "name": "commitpool-companion",
+  "version": "0.1.0",
+  "private": true,
+  "main": "expo/AppEntry.js",
+  "scripts": {
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --no-warnings --test src/evidence.test.ts"
+  },
+  "dependencies": {
+    "expo": "~57.0.27",
+    "expo-build-properties": "~57.0.22",
+    "expo-linking": "~57.0.12",
+    "react-native-health": "^1.19.0",
+    "react-native-health-connect": "^4.1.3",
+    "react": "19.2.3",
+    "react-native": "0.86.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "@types/react": "~19.2.0"
+  }
+}

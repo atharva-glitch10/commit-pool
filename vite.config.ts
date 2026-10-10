@@ -6,14 +6,14 @@ function oracleDevApi(env: Record<string, string>): Plugin {
   return {
     name: 'oracle-dev-api',
     configureServer(server) {
-      server.middlewares.use('/api/attest', async (req, res) => {
+      const route = (path: string, fn: 'attest' | 'challenge') => server.middlewares.use(path, async (req, res) => {
         let raw = ''
         req.on('data', (c) => (raw += c))
         req.on('end', async () => {
           try {
             // @ts-expect-error plain JS module
-            const { attest } = await import('./api/_oracle.js')
-            const r = await attest(JSON.parse(raw || '{}'), env)
+            const mod = await import('./api/_oracle.js')
+            const r = await mod[fn](JSON.parse(raw || '{}'), env)
             res.statusCode = r.status
             res.setHeader('content-type', 'application/json')
             res.end(JSON.stringify(r.body))
@@ -23,6 +23,8 @@ function oracleDevApi(env: Record<string, string>): Plugin {
           }
         })
       })
+      route('/api/attest', 'attest')
+      route('/api/challenge', 'challenge')
     },
   }
 }

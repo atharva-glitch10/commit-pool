@@ -37,7 +37,7 @@ export function Landing() {
         <h2 className="h2">How it works</h2>
         <ol className="steps">
           <li><strong>Lock a stake.</strong> Everyone in the pool puts in the same amount of MON. It sits in the contract; nobody, including us, can take it out early.</li>
-          <li><strong>Prove it every day.</strong> Inside each day’s window, tap check in. Your device vouches for you and the contract verifies the signature. A friend can’t do it for you.</li>
+          <li><strong>Prove it every day.</strong> Depending on the pool: tap in the window, answer a wake-up ring at a random moment, or send steps or sleep your phone or watch recorded. The contract verifies the oracle’s signature. A friend can’t do it for you.</li>
           <li><strong>Get paid for following through.</strong> When the last day ends, anyone can trigger the payout. People who kept every day split the stakes of those who didn’t.</li>
         </ol>
       </section>
@@ -50,6 +50,7 @@ export function Landing() {
             <div><dt>Check-ins can’t be replayed</dt><dd>Each signature is bound to this chain, this contract, this pool, your address and that one day. Reusing it anywhere else fails.</dd></div>
             <div><dt>Everything is public</dt><dd>Every join, check-in and payout is a transaction you can open on the <a href={`${EXPLORER}/address/${POOL_ADDRESS}`} target="_blank" rel="noreferrer">explorer</a>.</dd></div>
           </dl>
+          <p className="hint fine"><a href="#/trust">How each verification tier works, and what isn’t solved yet</a></p>
         </div>
         <div>
           <h2 className="h2">Who pays</h2>
@@ -77,7 +78,7 @@ export function Landing() {
 
       <section className="band faq">
         <h2 className="h2">Questions people ask</h2>
-        <details><summary>How does my phone prove I went to bed?</summary><p>When you tap check in, a device oracle signs a statement that you completed that day, and the contract checks the signature. For this hackathon the oracle is simulated: it confirms you’re a member and the window is open. The production version reads sleep and screen-time data from health apps before signing.</p></details>
+        <details><summary>How do you know I really did it?</summary><p>Each pool picks a verification tier. Basic is a tap inside the window. Tier 1 rings at a random moment you can’t predict, and you answer within the time limit and sign it with your wallet. Tiers 2 and 3 (in beta) read device-recorded steps or watch-recorded sleep from Health Connect or Apple Health through the CommitPool app, and manually entered data doesn’t count. <a href="#/trust">Read exactly how it works</a>, including what isn’t solved yet.</p></details>
         <details><summary>Can the app take my money?</summary><p>No. The contract has no admin functions. Stakes can only leave through the payout rules: to the people who finished, as refunds, or the 10% fee on forfeited stakes.</p></details>
         <details><summary>Why use a blockchain for this?</summary><p>So nobody has to trust a company to hold the pot or judge who won. And because every daily check-in is a transaction, it needs a chain that is fast and cheap, which is why it runs on Monad.</p></details>
         <details><summary>Why are the days 60 seconds long?</summary><p>So a whole challenge fits into a demo. Real pools use 24-hour days with a one-hour check-in window.</p></details>

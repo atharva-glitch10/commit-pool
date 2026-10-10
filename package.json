@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "test": "node --test api/_oracle.test.mjs",
+    "preview": "vite preview",
+    "test:oracle": "node --test api/_oracle.test.mjs"
   },
   "dependencies": {
     "@fontsource-variable/anybody": "^5.3.0",

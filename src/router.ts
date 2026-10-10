@@ -7,6 +7,7 @@ export type Route =
   | { name: 'new' }
   | { name: 'pool'; id: bigint }
   | { name: 'board' }
+  | { name: 'trust' }
 
 export function parse(hash: string): Route {
   const h = hash.replace(/^#/, '')
@@ -17,6 +18,7 @@ export function parse(hash: string): Route {
   if (parts[0] === 'app') return { name: 'app' }
   if (parts[0] === 'new') return { name: 'new' }
   if (parts[0] === 'leaderboard') return { name: 'board' }
+  if (parts[0] === 'trust') return { name: 'trust' }
   if (parts[0] === 'pool' && /^\d+$/.test(parts[1] ?? '')) return { name: 'pool', id: BigInt(parts[1]) }
   return { name: 'home' }
 }

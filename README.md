@@ -160,21 +160,39 @@ The deployed source is **verified on Sourcify** with a full (creation + runtime)
 Request body:
 
 ```json
-{ "poolId": "12", "member": "0xAbC...", "device": { "source": "phone", "at": 1760000000 } }
+{ "poolId": "12", "member": "0xAbC...",
+  "challenge": { "token": "...", "answer": "12", "walletSig": "0x..." },   // Tier 1 pools
+  "evidence": { "v": 1, "kind": "steps", "records": [ ... ] }, "evidenceSig": "0x..." }   // Tier 2/3 pools
 ```
 
 | Status | Meaning |
 |---|---|
-| `200` | `{ "signature": "0x...", "day": 0, "device": {...} }` |
+| `200` | `{ "signature": "0x...", "day": 0, "tier": 1, "verified": "..." }` |
 | `400` | Invalid `poolId` or `member` |
 | `403` | Address is not a member of the pool |
 | `409` | No window is open, or the day is already verified |
+| `422` | The tier's proof failed: wrong/expired wake-up answer, missing wallet signature, or health data that doesn't meet the goal (`error` explains why) |
 | `405` | Method other than `POST` |
 | `500` | Oracle not configured, key does not match the contract's `oracle`, or RPC error |
 
 The same core (`api/_oracle.js`) runs as a Vercel serverless function in production and as a Vite dev-server middleware locally.
 
-> **The oracle is a mock.** It verifies on-chain state only; it does not inspect real device data. See [limitations](#security-model-and-limitations).
+Tier 1 pools also use `POST /api/challenge { poolId, member }`, which reports when the wake-up ring is due and, once it rings, returns a short-lived puzzle.
+
+> Basic and Tier 1 checks are live. Tier 2/3 health-data rules are built and tested, but reading real data needs the companion app (beta). See [docs/VERIFICATION.md](docs/VERIFICATION.md).
+
+## Verification tiers
+
+Every pool picks how much proof a check-in needs. The tier is written into the pool's on-chain goal as a short tag (e.g. `|t1`), so it can't change after creation, and the deployed contract is unchanged.
+
+| Tier | Proof | Status |
+|---|---|---|
+| Basic | Tap inside the window | Live |
+| **Tier 1 · Wake-up ring** | Rings at a random moment in the window that nobody can predict; answer a puzzle before it expires; the answer is signed by your wallet | **Live** |
+| Tier 2 · Phone health app | Device-recorded steps from Health Connect / Apple Health; manual entries ignored; data signed by your wallet | Beta (companion app) |
+| Tier 3 · Smartwatch | Sleep recorded by a watch, ring or band, started on time and long enough; phone-only and manual sleep rejected | Beta (companion app) |
+
+Rules live in `api/_tiers.js`, `api/_challenge.js` and `api/_evidence.js` (`npm test`: 16 tests). The companion app is in [`companion/`](companion/). Full details and known limits: [docs/VERIFICATION.md](docs/VERIFICATION.md), and in the app at `#/trust`.
 
 ## Frontend
 
@@ -188,6 +206,7 @@ React 19 + Vite + TypeScript, wagmi 3 / viem for chain access, TanStack Query fo
 | `#/new` | Create a pledge |
 | `#/pool/:id` | Pool page: progress dial, members, check-in/join/settle/claim, QR invite, calendar export |
 | `#/leaderboard` | Ranking over the last 30 pools |
+| `#/trust` | How each verification tier works, and what isn't solved yet |
 
 Notable behaviour: live event feed with 1 s polling, per-transaction confirmation time, iCalendar (`.ics`) export of check-in windows, and legacy `?pool=ID` link redirects.
 
@@ -197,7 +216,12 @@ Notable behaviour: live event feed with 1 s polling, per-transaction confirmatio
 commit-pool/
 ├── api/
 │   ├── _oracle.js            # Oracle core (shared by Vercel + dev server)
-│   └── attest.js             # Vercel serverless handler
+│   ├── _tiers.js             # Tier tags in the goal + window maths
+│   ├── _challenge.js         # Tier 1 wake-up ring
+│   ├── _evidence.js          # Tier 2/3 health-data rules
+│   ├── _oracle.test.mjs      # Oracle tests
+│   ├── attest.js             # POST /api/attest
+│   └── challenge.js          # POST /api/challenge
 ├── contracts/
 │   ├── src/CommitPool.sol    # The contract
 │   ├── test/CommitPool.t.sol # Foundry tests (18, incl. fuzz)
@@ -206,6 +230,8 @@ commit-pool/
 │   ├── verify/               # Standard-JSON input for source verification
 │   └── foundry.toml
 ├── src/                      # React application
+├── companion/                # Expo app: reads Health Connect / Apple Health (beta)
+├── docs/VERIFICATION.md      # How check-ins are verified
 ├── public/                   # Static assets
 ├── PLAYBOOK.md               # Hackathon team playbook
 ├── .env.example
@@ -251,6 +277,7 @@ Get test MON from <https://faucet.monad.xyz>.
 | `npm run build` | Type-check and produce a production build in `dist/` |
 | `npm run preview` | Serve the production build |
 | `npm run lint` | Lint with oxlint |
+| `npm test` | Run the oracle tests (Node test runner) |
 
 ### Try a pool end to end
 

@@ -198,6 +198,51 @@ main { padding: 0 var(--gutter); max-width: 1320px; margin: 0 auto; min-height: 
 footer { padding: 24px var(--gutter) 40px; color: var(--dusk); font-size: 14px; max-width: 1320px; margin: 0 auto; }
 footer p { max-width: 80ch; margin: 0; }
 
+
+/* ── verification page ── */
+.trust { padding: 24px 0 64px; }
+.trusthead { max-width: 760px; padding-bottom: 8px; }
+.h3.flush { margin-top: 0; }
+.h4 { font-weight: 650; font-size: 17px; margin: 28px 0 8px; }
+.narrow { max-width: 68ch; margin: 0 0 16px; }
+.flow { counter-reset: f; list-style: none; padding: 0; margin: 0 0 18px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+.flow li { counter-increment: f; position: relative; padding: 44px 18px 0 0; border-top: 3px solid var(--ink); }
+.flow li::before { content: counter(f); position: absolute; top: 8px; left: 0; font-family: var(--display); font-weight: 800; font-size: 22px; line-height: 1; }
+.status { display: inline-flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 12px; margin: 8px 0 0; }
+.status.sim { background: var(--sun-soft); }
+.tagdot { width: 10px; height: 10px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 0 1.5px var(--ink); flex: none; }
+
+.ticks, .crosses, .plan { list-style: none; padding: 0; margin: 0 0 12px; max-width: 64ch; }
+.ticks li, .crosses li, .plan li { position: relative; padding: 8px 0 8px 28px; border-bottom: 1px solid var(--track); }
+.ticks li::before { content: '✓'; position: absolute; left: 4px; top: 8px; font-weight: 800; }
+.plan li::before { content: ''; position: absolute; left: 6px; top: 17px; width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--dusk); }
+.crosses li::before { content: '○'; position: absolute; left: 4px; top: 8px; color: var(--flare); font-weight: 800; }
+.pipeline { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; margin: 20px 0 4px; }
+.pipeline div { background: var(--paper); padding: 16px 18px 16px 22px; display: flex; flex-direction: column; gap: 4px; position: relative; clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%, 14px 50%); margin-right: -6px; }
+.pipeline div:first-child { clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%); border-radius: 12px 0 0 12px; }
+.pipeline div:last-child { background: var(--ink); color: var(--paper); clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 14px 50%); border-radius: 0 12px 12px 0; }
+.pipeline b { font-size: 15px; line-height: 1.2; }
+.pipeline span { font-size: 13px; color: var(--dusk); line-height: 1.3; }
+.pipeline div:last-child span { color: var(--track); }
+.levels { width: 100%; border-collapse: collapse; background: var(--paper); border-radius: 16px; overflow: hidden; }
+.levels th { text-align: left; font-size: 13px; color: var(--dusk); font-weight: 600; padding: 12px 14px; border-bottom: 1.5px solid var(--ink); }
+.levels td { padding: 12px 14px; border-bottom: 1px solid var(--track); vertical-align: top; }
+.pill.live { background: var(--sun); }
+.trustfoot { overflow-wrap: anywhere; }
+.verifybadge { display: inline-block; margin-top: 10px; font-size: 13px; padding: 4px 12px; border-radius: 999px; background: var(--sun-soft); text-decoration: none; }
+.verifybadge:hover { text-decoration: underline; }
+.textlink.quiet { font-weight: 500; text-decoration-thickness: 1px; color: var(--dusk); }
+@media (max-width: 960px) {
+  .flow { grid-template-columns: 1fr 1fr; row-gap: 20px; }
+  .pipeline { grid-template-columns: 1fr; gap: 6px; }
+  .pipeline div, .pipeline div:first-child, .pipeline div:last-child { clip-path: none; border-radius: 12px; margin: 0; }
+}
+@media (max-width: 640px) {
+  .flow { grid-template-columns: 1fr; }
+  .levels th:nth-child(2), .levels td:nth-child(2) { display: none; }
+  .textlink.quiet { display: none; }
+}
+
 @media (max-width: 960px) {
   .hero, .band.split, .poolpage, .dash { grid-template-columns: 1fr; }
   .stage, .side { position: static; }
@@ -215,3 +260,28 @@ footer p { max-width: 80ch; margin: 0; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   html { scroll-behavior: auto; }
 }
+
+/* ── tiers ── */
+.tiers { border: 0; padding: 0; margin: 0 0 22px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.tiers legend { font-weight: 650; margin-bottom: 10px; padding: 0; }
+.tiercard { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px 14px 44px; background: var(--paper); border-radius: 14px; border: 1.5px solid transparent; cursor: pointer; position: relative; }
+.tiercard input { position: absolute; left: 16px; top: 17px; accent-color: var(--ink); width: 16px; height: 16px; }
+.tiercard.on { border-color: var(--ink); }
+.tiercard.locked { opacity: .6; cursor: not-allowed; }
+.tiercard .tt { font-weight: 650; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.tiercard .tb { font-size: 14px; color: var(--dusk); }
+.beta { font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--sky); color: var(--dusk); }
+.w-mid { width: 5em; text-align: center; }
+.w-time { width: 5.4em; }
+.verifybadge.t1 { background: var(--sun); }
+.verifybadge.t2, .verifybadge.t3 { background: var(--ink); color: var(--paper); }
+.ringbox { width: 100%; display: flex; flex-direction: column; gap: 12px; align-items: stretch; }
+.ringbox .btn { width: 100%; }
+.ringbox.ringing { background: var(--sun-soft); border-radius: 16px; padding: 16px; animation: ringpulse 1s ease-in-out 3; }
+@keyframes ringpulse { 50% { box-shadow: 0 0 0 6px var(--sun); } }
+.ringhead { margin: 0; font-weight: 650; font-size: 18px; }
+.ringwait { margin: 0; font-size: 18px; font-variant-numeric: tabular-nums; }
+.puzzle { display: flex; flex-direction: column; gap: 8px; font-family: var(--display); font-weight: 750; font-size: 24px; font-variation-settings: 'wdth' 110; }
+.puzzle input { font: 700 28px var(--text); padding: 10px 14px; border-radius: 12px; border: 2px solid var(--ink); background: #fff; color: var(--ink); width: 8ch; }
+.qr.small { width: 132px; height: 132px; }
+@media (max-width: 640px) { .tiers { grid-template-columns: 1fr; } }

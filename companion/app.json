@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "CommitPool",
+    "slug": "commitpool-companion",
+    "scheme": "commitpool",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "ios": {
+      "bundleIdentifier": "xyz.commitpool.companion",
+      "infoPlist": { "NSHealthShareUsageDescription": "CommitPool reads your steps and sleep to verify your daily check-ins." }
+    },
+    "android": {
+      "package": "xyz.commitpool.companion",
+      "permissions": ["android.permission.health.READ_STEPS", "android.permission.health.READ_SLEEP"]
+    },
+    "plugins": [
+      "react-native-health-connect",
+      ["expo-build-properties", { "android": { "compileSdkVersion": 36, "targetSdkVersion": 36, "minSdkVersion": 26 } }],
+      ["react-native-health", { "healthSharePermission": "CommitPool reads your steps and sleep to verify your daily check-ins." }]
+    ]
+  }
+}

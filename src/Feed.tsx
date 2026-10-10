@@ -4,6 +4,7 @@ import { abi } from './abi'
 import { EXPLORER, POOL_ADDRESS } from './config'
 import { base, mon } from './lib'
 import { displayName } from './names'
+import { parseGoal } from './shared'
 
 type FeedItem = { key: string; text: string; tx: string; tone: string; pool: string; addr?: string }
 function toItems(logs: readonly unknown[]): FeedItem[] {
@@ -15,7 +16,7 @@ function toItems(logs: readonly unknown[]): FeedItem[] {
     let text = `${ev} in pool ${p}`, tone = ''
     if (ev === 'DayVerified') { text = `${displayName(who)} kept day ${Number(a.day) + 1} in pool ${p}`; tone = 'kept' }
     else if (ev === 'Joined') text = `${displayName(who)} put money on pool ${p}`
-    else if (ev === 'PoolCreated') text = `New pool ${p}: “${a.goal}”`
+    else if (ev === 'PoolCreated') text = `New pool ${p}: “${parseGoal(String(a.goal)).text}”`
     else if (ev === 'PoolSettled') { text = `Pool ${p} paid out to ${a.winners} ${Number(a.winners) === 1 ? 'person' : 'people'}`; tone = 'kept' }
     else if (ev === 'Claimed') text = `${displayName(who)} withdrew ${mon(a.amount as bigint)} MON`
     else if (ev === 'PoolCancelled') text = `Pool ${p} was cancelled and refunded`

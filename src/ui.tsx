@@ -32,9 +32,11 @@ export function TopBar({ route }: { route: Route }) {
           <a href="#/app" aria-current={route.name === 'app' ? 'page' : undefined}>Pools</a>
           <a href="#/new" aria-current={route.name === 'new' ? 'page' : undefined}>New pledge</a>
           <a href="#/leaderboard" aria-current={route.name === 'board' ? 'page' : undefined}>Leaderboard</a>
+          <a href="#/trust" aria-current={route.name === 'trust' ? 'page' : undefined}>How it’s verified</a>
         </nav>
       )}
       <div className="topright">
+        {!inApp && route.name !== 'start' && <a className="textlink quiet" href="#/trust">How it’s verified</a>}
         {!inApp && route.name !== 'start' && <a className="textlink" href="#/app">Open the app</a>}
         {route.name !== 'start' && <WalletChip next={here && !here.startsWith('/start') ? here : '/app'} />}
       </div>
@@ -48,7 +50,7 @@ export function Footer() {
       <p>
         CommitPool runs on Monad Testnet. Contract{' '}
         <a href={`${EXPLORER}/address/${POOL_ADDRESS}`} target="_blank" rel="noreferrer">{short(POOL_ADDRESS)}</a>.
-        The device oracle is simulated for this hackathon; in production it reads wearable and health-app data. Not audited.
+        Check-ins are verified by our oracle: basic and wake-up-ring pools are live; step and sleep pools are in beta. <a href="#/trust">How it works</a>. Not audited.
       </p>
     </footer>
   )

@@ -7,3 +7,7 @@ contracts/cache
 contracts/lib
 contracts/broadcast
 .vercel
+companion/node_modules
+companion/.expo
+companion/android
+companion/ios

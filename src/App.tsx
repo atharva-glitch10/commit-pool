@@ -6,6 +6,7 @@ import { Dashboard, Leaderboard } from './Dashboard'
 import { PoolPage } from './PoolPage'
 import { Pledge } from './Pledge'
 import { Feed } from './Feed'
+import { Verification } from './Verification'
 
 export default function App() {
   const route = useRoute()
@@ -18,6 +19,7 @@ export default function App() {
         {route.name === 'start' && <Start next={route.next} />}
         {route.name === 'app' && <Dashboard />}
         {route.name === 'board' && <Leaderboard />}
+        {route.name === 'trust' && <Verification />}
         {route.name === 'pool' && <PoolPage id={route.id} key={route.id.toString()} />}
         {route.name === 'new' && (
           <div className="dash">

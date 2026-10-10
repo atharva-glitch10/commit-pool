@@ -3,10 +3,12 @@ import { useConnection, useReadContract, useReadContracts } from 'wagmi'
 import QRCode from 'qrcode'
 import { abi } from './abi'
 import { POOL_ADDRESS } from './config'
-import { allMask, base, clock, deadlineOf, dur, errMsg, mon, toPool, TxLine, useNow, useTx, type PoolRow } from './lib'
+import { allMask, base, clock, deadlineOf, dur, mon, toPool, TxLine, useNow, useTx, type PoolRow } from './lib'
 import { poolLink } from './router'
 import { Dial } from './ui'
 import { Feed } from './Feed'
+import { CheckIn } from './CheckIn'
+import { TIERS } from './shared'
 import { displayName } from './names'
 
 export function PoolPage({ id }: { id: bigint }) {
@@ -63,26 +65,11 @@ export function PoolPanel({ id, compact = false }: { id: bigint; compact?: boole
   const checkedToday = isMember && openDay >= 0 && mine && (mine[2] & (1 << openDay)) !== 0
   const busy = status.kind === 'pending'
 
-  async function checkIn() {
-    setStatus({ kind: 'pending', msg: 'Reading your device and asking the oracle to sign…' })
-    try {
-      const r = await fetch('/api/attest', {
-        method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ poolId: id.toString(), member: address, device: { source: 'phone', at: Math.floor(Date.now() / 1000) } }),
-      })
-      const j = await r.json().catch(() => ({}))
-      if (!r.ok) throw new Error(j.error || `The oracle refused this check-in (${r.status}).`)
-      await send('submit', [id, j.signature], undefined, `Day ${openDay + 1} kept. It’s on-chain.`)
-    } catch (e) {
-      setStatus({ kind: 'err', msg: errMsg(e) })
-    }
-  }
-
   let action: React.ReactNode = null
   if (!address) action = <a className="btn ink big" href={`#/start?next=${encodeURIComponent(`/pool/${id}`)}`}>Connect a wallet to join or check in</a>
   else if (!isMember && !p.cancelled && now < joinBy && p.memberCount < p.maxMembers)
     action = <button className="btn sun big" disabled={busy} onClick={() => send('joinPool', [id], p.stake, 'You’re in. Your stake is locked in the contract.')}>Join with {mon(p.stake)} MON</button>
-  else if (needsCheckIn) action = <button className="btn sun big" disabled={busy} onClick={checkIn}>Check in for day {openDay + 1}</button>
+  else if (needsCheckIn) action = <CheckIn p={p} day={openDay} member={address} send={send} setStatus={setStatus} busy={busy} />
   else if (checkedToday) action = <p className="hint ok">Day {openDay + 1} is kept. See you at the next deadline.</p>
   else if (!p.cancelled && p.memberCount < 2 && now >= joinBy)
     action = <button className="btn ink big" disabled={busy} onClick={() => send('cancelUnderfilled', [id], undefined, 'Pool cancelled. Claim your refund.')}>Cancel and refund</button>
@@ -106,6 +93,11 @@ export function PoolPanel({ id, compact = false }: { id: bigint; compact?: boole
           {p.memberCount} of {p.maxMembers} people, {mon(p.stake)} MON each, {p.days} {p.days === 1 ? 'day' : 'days'}.
           {' '}<strong>{mon(pot)} MON</strong> locked in the contract.
         </p>
+        <a className={`verifybadge t${p.policy.tier}`} href="#/trust" title="How check-ins are verified">
+          {p.policy.tier === 0 ? 'Basic check-in (tap)' : TIERS[p.policy.tier].name}
+          {p.policy.tier === 2 && ` · ${p.policy.steps!.toLocaleString()} steps a day`}
+          {p.policy.tier === 3 && ` · ${Math.round(p.policy.sleepMin! / 6) / 10} h sleep`} · how it’s verified
+        </a>
       </div>
       <Dial
         rings={members.map((_, i) => ({ mask: states?.[i]?.result?.[2] ?? 0, me: i === meIdx }))}
