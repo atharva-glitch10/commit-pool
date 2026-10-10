@@ -53,13 +53,13 @@ Monad Testnet in MetaMask: RPC `https://testnet-rpc.monad.xyz`, chain ID `10143`
    - `VITE_POOL_ADDRESS` = contract address
    - `ORACLE_PRIVATE_KEY` = oracle account's private key (starts with `0x`)
 3. Deploy. Open the URL, connect MetaMask, create a pool.
-4. If "Verify with device" errors with "Oracle key does not match contract oracle", the key in Vercel isn't the private key of the `oracle_` address you deployed with.
+4. If "Check in" errors with "Oracle key does not match contract oracle", the key in Vercel isn't the private key of the `oracle_` address you deployed with.
 5. If `/api/attest` returns 404, tell Claude immediately. That's a hosting issue, fixable in minutes.
 
 ## Step 5: Test and prepare the demo pool
 Use 3 browser profiles (or 3 browsers), each with MetaMask holding a different account.
-- Create a pool: *Live demo 60 s*, 3 days, starting in 2 min, stake 0.1.
-- Others join from the share link → each day click **Verify with device** in the window → one person skips day 2 → settle → claim.
+- Create a pool: *Live demo 60 s*, 3 days, starting in 2 min, stake 0.01–0.1 (the pledge form defaults to 0.1).
+- Others join from the share link → each day click **Check in for day N** in the window → one person skips day 2 → settle → claim.
 - Keep that pool's ID. It's the **finished pool** you open in the demo to show the payout and fee.
 
 ---
@@ -72,7 +72,7 @@ Use 3 browser profiles (or 3 browsers), each with MetaMask holding a different a
 **0:20–1:50 Live demo** (the core; judges want to see it running)
 1. Open the live URL. Point at the stats bar: pools, total staked, **protocol revenue**.
 2. Open the **pre-run pool**: "3 friends, 3 days. This one missed day 2. The contract paid the finishers, and the protocol took 10% of the forfeited stake only."
-3. **Live:** a pool created ~2 minutes before your slot (do it while the previous team presents). Click **Verify with device** → MetaMask → it lands. Point at the **"confirmed in X s"** and the **Live on Monad** feed.
+3. **Live:** a pool created ~2 minutes before your slot (do it while the previous team presents). Click **Check in for day N** → MetaMask → it lands. Point at the **"confirmed in X s"** and the **Live on Monad** feed.
 
 **1:50–2:30 How it works / why Monad**
 "The phone gets an attestation from our device oracle, and the contract verifies the signature on-chain. No friend vouching, so no collusion. Every daily check-in is a real transaction, which is only practical on a chain this fast and cheap. No admin key: the oracle, treasury and fee are immutable. 18 tests, including a fuzz test proving every wei is accounted for."
@@ -90,10 +90,10 @@ Use 3 browser profiles (or 3 browsers), each with MetaMask holding a different a
 ---
 
 ## Build in Public (worth 100 points, as much as the working product)
-Post on **X** (and LinkedIn if you have time). Tag **@monad** and **@monad_dev**, and use the event hashtag the organizers give you. Posts after 5:45 PM don't count. Keep a list of every post link and its **view count** (screenshot the counts at ~5:30).
+Post on **X** (and LinkedIn if you have time). Tag **@monad, @monad_dev and @geeky_kartikey** in **every** post (the rubric names these three), and use the event hashtag if there is one. Posts after 5:45 PM don't count. Keep a list of every post link and its **view count** (screenshot the counts at ~5:30).
 
 **#1 (now)**
-> Building at #MonadBlitz Pune 🌙 Team ___ is making CommitPool: stake money on your habits (sleep, screen time, steps), your phone proves you did it, and a smart contract on @monad pays the people who follow through. 6 hours. Let's go 🚀
+> Building at #MonadBlitz Pune 🌙 Team ___ is making CommitPool: stake money on your habits (sleep, screen time, steps), your phone proves you did it, and a smart contract on @monad @monad_dev @geeky_kartikey pays the people who follow through. 6 hours. Let's go 🚀
 
 **#2 (contract deployed, add explorer screenshot)**
 > CommitPool contract is live on @monad testnet ✅ No admin key. The oracle, treasury and fee are immutable, so nobody (including us) can touch your stake. 18 tests + fuzzing for money conservation. 0x___

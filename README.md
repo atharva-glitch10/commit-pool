@@ -1,235 +1,273 @@
 # CommitPool
 
-Device-verified commitment pools on Monad. Participants stake funds on a recurring habit, prove completion with signed device attestations, and complete-all-days members split the stakes forfeited by those who did not.
+**Stake money on your habits. Your device proves it. Smart contracts pay the people who follow through.**
 
-Built for Monad Blitz Pune V3 (10 October 2026), idea-board track: *Commitment contracts and accountability pools*.
+CommitPool is a decentralized commitment-contract app built on [Monad](https://monad.xyz). A group of friends each lock the same stake behind a daily goal ("in bed by 23:00"). Every day, each member submits a signed device attestation on-chain inside a time window. Members who complete every day split the stakes of those who didn't. The protocol earns a fee **only** on forfeited stakes; winners never pay.
+
+Built at **Monad Blitz Pune V3** (10 Oct 2026), idea-board track *Commitment contracts & accountability pools*.
 
 | | |
 |---|---|
-| **Status** | Prototype, testnet only, unaudited |
 | **Network** | Monad Testnet (chain ID `10143`) |
 | **Contract** | [`0x59747B1A995EF0Cb01CA6A97CE0aaeA38b2474F4`](https://testnet.monadvision.com/address/0x59747B1A995EF0Cb01CA6A97CE0aaeA38b2474F4) |
-| **Application** | `https://YOUR-APP.vercel.app` (to be added after deployment) |
-| **License** | MIT |
+| **Explorer** | <https://testnet.monadvision.com> |
+| **Status** | Hackathon prototype. Testnet only, **not audited** |
 
-## Table of Contents
+---
 
-1. [Overview](#overview)
-2. [Architecture](#architecture)
-3. [Getting Started](#getting-started)
-4. [Configuration](#configuration)
-5. [Smart Contract](#smart-contract)
-6. [Oracle API](#oracle-api)
-7. [Testing](#testing)
-8. [Deployment](#deployment)
-9. [Security](#security)
-10. [Known Limitations](#known-limitations)
-11. [Roadmap](#roadmap)
-12. [Contributing](#contributing)
-13. [License](#license)
+## Table of contents
 
-## Overview
+- [Why CommitPool](#why-commitpool)
+- [How it works](#how-it-works)
+- [Architecture](#architecture)
+- [Smart contract](#smart-contract)
+- [Device oracle API](#device-oracle-api)
+- [Frontend](#frontend)
+- [Project structure](#project-structure)
+- [Getting started](#getting-started)
+- [Configuration](#configuration)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [Security model and limitations](#security-model-and-limitations)
+- [Business model](#business-model)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [License](#license)
 
-### Problem
+---
 
-Habit change fails largely because quitting is free and unverified. Existing commitment products depend on a custodian that holds funds and adjudicates outcomes, or on peer vouching, which is easily gamed.
+## Why CommitPool
 
-### Solution
+Most people who try to fix a habit (sleep schedule, phone use, exercise) quit within weeks. Quitting costs nothing and nobody checks. Existing commitment apps either hold your money and judge you themselves, or rely on friends vouching, which is easy to fake.
 
-CommitPool replaces both with an on-chain escrow and a signed device attestation:
+CommitPool replaces both with:
 
-1. **Create.** A creator defines a goal, a per-member stake, a start time, a day length and a number of days. Other members join by staking the same amount.
-2. **Verify.** Each day, within a short window, a member obtains a signature from the device oracle over `(chainId, contract, poolId, member, day)` and submits it on-chain. The contract validates it with `ecrecover`.
-3. **Settle.** After the final window, any account may settle the pool. Members who verified every day claim their stake plus an equal share of the forfeited stakes, net of the protocol fee.
+- **Escrow with no admin.** Funds sit in the contract. Oracle, treasury and fee are `immutable`; there is no function that lets anyone move member stakes outside the payout rules.
+- **Device-verified check-ins.** A signed attestation bound to *(chain, contract, pool, member, day)* is verified on-chain with `ecrecover`. No friend vouching, so no collusion.
+- **Public, verifiable history.** Every join, check-in and payout is an on-chain event.
+- **A chain fast enough for daily habits.** Many users x many pools x daily check-ins means many small, frequent writes. The app measures and displays each transaction's confirmation time.
 
-### Payout rules
+## How it works
 
-For `n` members, `w` members who completed all days, stake `s` and fee `f` in basis points:
+1. **Create a pool.** Choose a goal, a stake, a number of days (1-30) and up to 20 members. The creator's stake is locked on creation; friends join by staking the same amount until the first check-in window opens.
+2. **Check in daily.** Inside each day's window (deadline ± window), the member taps *Check in*. The oracle signs an attestation and the member submits it with `submit(poolId, sig)`.
+3. **Settle and claim.** After the last window closes, anyone calls `settle`. Members who verified every day claim their stake plus an equal share of the forfeited stakes (minus the protocol fee).
 
-| Quantity | Formula |
-|---|---|
-| Forfeited amount | `s × (n − w)` |
-| Protocol fee | `forfeited × f / 10000` |
-| Winner payout | `s + (forfeited − fee) / w` |
-
-- If `w = 0`, the whole pot is treated as forfeited; the fee is deducted and the remainder is refunded equally.
-- Rounding remainders are credited to the treasury, so total payouts plus fees always equal total stakes.
-- Pools with fewer than two members after the join deadline can be cancelled; all stakes are refunded in full.
-
-### Pool lifecycle
-
-```
-createPool ─► joinPool (until startTime − window)
-                  │
-      ┌───────────┴───────────┐
-  < 2 members             ≥ 2 members
-      │                       │
-cancelUnderfilled      submit (once per day, inside window)
-      │                       │
- claim (refund)         settle (after final window)
-                              │
-                        claim · withdrawFees
+```mermaid
+sequenceDiagram
+    participant M as Member (wallet)
+    participant W as Web app
+    participant O as Oracle API
+    participant C as CommitPool contract
+    M->>W: Tap "Check in"
+    W->>O: POST /api/attest {poolId, member}
+    O->>C: read membership, window, doneMask
+    O-->>W: signature over attestationHash
+    W->>C: submit(poolId, signature)
+    C->>C: ecrecover == oracle ?
+    C-->>M: DayVerified event
 ```
 
-### Business model
+### Settlement math
 
-The protocol charges a fee **only on forfeited stakes**: 10% at deployment, capped at 20% in the contract. Members who complete the commitment pay nothing. Fees can be withdrawn only to a treasury address fixed at deployment.
+Let `n` be members, `w` winners (completed every day), `stake` the per-member stake and `feeBps` the fee.
+
+| Case | Forfeited | Fee | Payout per eligible member |
+|---|---|---|---|
+| `w = n` (everyone finishes) | 0 | 0 | `stake` |
+| `0 < w < n` | `stake * (n - w)` | `forfeited * feeBps / 10000` | `stake + (forfeited - fee) / w` |
+| `w = 0` (nobody finishes) | `stake * n` | `pot * feeBps / 10000` | `(pot - fee) / n` (everyone refunded minus fee) |
+
+Integer-division rounding dust is added to the fee, so every wei is accounted for: `paid out + fees == total staked`. This invariant is covered by a fuzz test.
+
+**Example:** three friends stake 0.1 MON, one skips a day. Forfeit = 0.1, fee (10%) = 0.01, each finisher receives `0.1 + 0.045 = 0.145 MON`.
 
 ## Architecture
 
-```
-┌─────────────────┐  POST /api/attest   ┌──────────────────────┐
-│  Web client     │ ──────────────────► │  Oracle service      │
-│  React · wagmi  │ ◄────────────────── │  (serverless)        │
-└────────┬────────┘   signature         └──────────┬───────────┘
-         │                                         │ read pool state
-         │ submit(poolId, signature)               │
-         ▼                                         ▼
-┌────────────────────────────────────────────────────────────────┐
-│                CommitPool.sol · Monad Testnet                  │
-└────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph Browser
+      UI[React + wagmi + viem]
+    end
+    subgraph Serverless
+      API["/api/attest (Vercel function)"]
+    end
+    subgraph Monad Testnet
+      SC[CommitPool.sol]
+    end
+    UI -- reads, writes, events --> SC
+    UI -- POST attest --> API
+    API -- reads state, signs hash --> SC
 ```
 
-| Component | Technology |
+| Component | Responsibility |
 |---|---|
-| Smart contract | Solidity 0.8.28, no external dependencies |
-| Contract tooling | Foundry |
-| Client | React 19, TypeScript, Vite 8, wagmi 3, viem 2 |
-| Oracle | Node.js serverless function (Vercel) using viem |
+| `CommitPool.sol` | Escrow, membership, signature verification, settlement, claims, fee accounting |
+| Oracle (`api/`) | Checks membership and window on-chain, signs the attestation hash with the oracle key |
+| Frontend (`src/`) | Wallet onboarding, pool creation, check-in, live feed, dashboard and leaderboard |
 
-The oracle core (`api/_oracle.js`) is shared by the production function and the Vite dev server, so local and deployed behaviour are identical.
+## Smart contract
 
-### Repository layout
+`contracts/src/CommitPool.sol` (Solidity 0.8.28, no dependencies, EVM `cancun`).
+
+### Public interface
+
+| Function | Description |
+|---|---|
+| `createPool(goal, stake, startTime, dayLength, window, numDays, maxMembers)` | Create a pool and lock the creator's stake (`msg.value == stake`) |
+| `joinPool(poolId)` | Join by sending exactly `stake`, until `startTime - window` |
+| `cancelUnderfilled(poolId)` | Cancel a pool that has fewer than 2 members after the join deadline; members can claim a full refund |
+| `submit(poolId, sig)` | Submit today's oracle attestation inside the open window |
+| `settle(poolId)` | Compute winners and payouts after the final window (callable by anyone, once) |
+| `claim(poolId)` | Pull your payout or refund |
+| `withdrawFees()` | Push accrued fees to the fixed treasury (callable by anyone) |
+| `openDay`, `deadlineOf`, `endTime`, `joinDeadline`, `attestationHash`, `getMembers` | Views |
+
+### Parameters and limits
+
+| Constant | Value |
+|---|---|
+| `MIN_MEMBERS` / `MAX_MEMBERS` | 2 / 20 |
+| `MAX_DAYS` | 30 |
+| `MIN_DAY_LENGTH` | 60 s |
+| `MAX_FEE_BPS` | 2000 (20%) |
+| Goal length | 1-80 bytes |
+| Window | `0 < window` and `window * 2 < dayLength` (windows never overlap) |
+
+### Attestation format
+
+The oracle signs, with EIP-191 `personal_sign`, the 32-byte value:
+
+```solidity
+keccak256(abi.encode(block.chainid, address(this), poolId, member, day))
+```
+
+Binding the chain, contract, pool, member and day prevents cross-chain, cross-contract, cross-user and cross-day replay. Signatures with an upper-half `s` are rejected (malleability).
+
+### Errors
+
+`BadParams`, `WrongStake`, `PoolNotFound`, `JoinClosed`, `PoolFull`, `AlreadyMember`, `NotMember`, `PoolInactive`, `OutsideWindow`, `AlreadyDone`, `BadSignature`, `TooEarly`, `AlreadySettled`, `NotUnderfilled`, `NothingToClaim`, `TransferFailed`.
+
+### Verification
+
+Source is published on MonadVision via Sourcify (solc 0.8.28, optimizer on / 200 runs, EVM `cancun`). The reproducible compiler input is in [`contracts/verify/CommitPool.standard-input.json`](contracts/verify/CommitPool.standard-input.json).
+
+## Device oracle API
+
+`POST /api/attest`
+
+Request body:
+
+```json
+{ "poolId": "12", "member": "0xAbC...", "device": { "source": "phone", "at": 1760000000 } }
+```
+
+| Status | Meaning |
+|---|---|
+| `200` | `{ "signature": "0x...", "day": 0, "device": {...} }` |
+| `400` | Invalid `poolId` or `member` |
+| `403` | Address is not a member of the pool |
+| `409` | No window is open, or the day is already verified |
+| `405` | Method other than `POST` |
+| `500` | Oracle not configured, key does not match the contract's `oracle`, or RPC error |
+
+The same core (`api/_oracle.js`) runs as a Vercel serverless function in production and as a Vite dev-server middleware locally.
+
+> **The oracle is a mock.** It verifies on-chain state only; it does not inspect real device data. See [limitations](#security-model-and-limitations).
+
+## Frontend
+
+React 19 + Vite + TypeScript, wagmi 3 / viem for chain access, TanStack Query for caching. Hash-based routing:
+
+| Route | Page |
+|---|---|
+| `#/` | Landing page with live pool and ledger |
+| `#/start` | Onboarding wizard: wallet, connect, Monad Testnet, faucet funds |
+| `#/app` | Dashboard: your pools, open pools, recent pools |
+| `#/new` | Create a pledge |
+| `#/pool/:id` | Pool page: progress dial, members, check-in/join/settle/claim, QR invite, calendar export |
+| `#/leaderboard` | Ranking over the last 30 pools |
+
+Notable behaviour: live event feed with 1 s polling, per-transaction confirmation time, iCalendar (`.ics`) export of check-in windows, and legacy `?pool=ID` link redirects.
+
+## Project structure
 
 ```
-.
+commit-pool/
 ├── api/
-│   ├── attest.js              Serverless handler for POST /api/attest
-│   └── _oracle.js             Oracle logic (shared with dev server)
+│   ├── _oracle.js            # Oracle core (shared by Vercel + dev server)
+│   └── attest.js             # Vercel serverless handler
 ├── contracts/
-│   ├── src/CommitPool.sol     Contract
-│   ├── test/CommitPool.t.sol  Foundry test suite
-│   ├── script/Deploy.s.sol    Deployment script
-│   └── scripts/demo-pool.sh   Demo pool runner
-├── src/                       React application
-├── .env.example               Environment template
-└── vite.config.ts             Build config and dev oracle middleware
+│   ├── src/CommitPool.sol    # The contract
+│   ├── test/CommitPool.t.sol # Foundry tests (18, incl. fuzz)
+│   ├── script/Deploy.s.sol   # Deployment script
+│   ├── scripts/demo-pool.sh  # Pre-runs a full 3-day demo pool
+│   ├── verify/               # Standard-JSON input for source verification
+│   └── foundry.toml
+├── src/                      # React application
+├── public/                   # Static assets
+├── PLAYBOOK.md               # Hackathon team playbook
+├── .env.example
+└── vite.config.ts            # Vite config + dev oracle middleware
 ```
 
-## Getting Started
+## Getting started
 
 ### Prerequisites
 
-| Requirement | Notes |
-|---|---|
-| Node.js 20 or later | With npm |
-| EVM browser wallet | e.g. MetaMask |
-| Monad Testnet MON | From a public faucet |
-| Foundry | Only required for contract development |
+- Node.js 20+ and npm
+- [Foundry](https://book.getfoundry.sh/getting-started/installation) (only for contract work)
+- A browser wallet such as MetaMask
 
-### Installation
+### Run the app locally
 
 ```bash
-git clone <repository-url> commit-pool
+git clone https://github.com/atharva-glitch10/commit-pool.git
 cd commit-pool
 npm install
-cp .env.example .env.local      # Windows: copy .env.example .env.local
+cp .env.example .env.local     # set ORACLE_PRIVATE_KEY
+npm run dev                    # http://localhost:5173 (serves /api/attest too)
 ```
 
-Set `ORACLE_PRIVATE_KEY` in `.env.local` (see [Configuration](#configuration)).
+Without `ORACLE_PRIVATE_KEY` the app still reads pools and lets you create/join them, but check-ins return "Oracle not configured".
 
-### Run locally
-
-```bash
-npm run dev
-```
-
-The application is served at `http://localhost:5173`, with the oracle available at `/api/attest`.
-
-### Wallet network settings
+### Add Monad Testnet to your wallet
 
 | Field | Value |
 |---|---|
-| Network name | Monad Testnet |
 | RPC URL | `https://testnet-rpc.monad.xyz` |
 | Chain ID | `10143` |
-| Currency | `MON` |
-| Block explorer | `https://testnet.monadvision.com` |
+| Symbol | `MON` |
+| Explorer | `https://testnet.monadvision.com` |
+
+Get test MON from <https://faucet.monad.xyz>.
 
 ### Scripts
 
-| Command | Purpose |
+| Command | Action |
 |---|---|
-| `npm run dev` | Development server (client and oracle) |
-| `npm run build` | Type-check and production build |
-| `npm run preview` | Serve the production build locally |
+| `npm run dev` | Start the dev server |
+| `npm run build` | Type-check and produce a production build in `dist/` |
+| `npm run preview` | Serve the production build |
 | `npm run lint` | Lint with oxlint |
+
+### Try a pool end to end
+
+1. Connect a wallet and switch to Monad Testnet.
+2. Open **New pledge**; choose *60-second demo days*, 1-3 days, a small stake, first check-in in 2 minutes; sign.
+3. Share the invite link (or QR) and have a second wallet join.
+4. When the dial shows the window is open, each member clicks **Check in for day N**.
+5. After the last day, anyone clicks **Pay out the pool**; winners click **Claim**.
 
 ## Configuration
 
 | Variable | Scope | Required | Description |
 |---|---|---|---|
-| `ORACLE_PRIVATE_KEY` | Server only | For check-ins | Private key of the address configured as `oracle` in the contract. Must never be exposed to the client or committed. |
-| `VITE_POOL_ADDRESS` | Client and server | No | Contract address. Defaults to the deployment listed above. |
-| `VITE_RPC_URL` | Client and server | No | RPC endpoint. Defaults to `https://testnet-rpc.monad.xyz`. |
+| `ORACLE_PRIVATE_KEY` | Server only | Yes (for check-ins) | Private key of the address passed as `oracle_` at deploy time |
+| `VITE_POOL_ADDRESS` | Client + server | No | Contract address; defaults to the deployed testnet contract |
+| `VITE_RPC_URL` | Client + server | No | RPC override; defaults to `https://testnet-rpc.monad.xyz` |
 
-If the configured key does not correspond to the contract's `oracle` address, `/api/attest` responds with `Oracle key does not match contract oracle`.
-
-## Smart Contract
-
-Source: `contracts/src/CommitPool.sol` (Solidity 0.8.28, MIT).
-
-### Parameters
-
-| Name | Value | Description |
-|---|---|---|
-| `MIN_MEMBERS` | 2 | Minimum members for an active pool |
-| `MAX_MEMBERS` | 20 | Maximum members per pool |
-| `MAX_DAYS` | 30 | Maximum pool duration |
-| `MIN_DAY_LENGTH` | 60 s | Shortest permitted day |
-| `MAX_FEE_BPS` | 2000 | Fee cap (20%) |
-| `oracle`, `treasury`, `feeBps` | Set at deployment | `immutable` |
-
-### External functions
-
-| Function | Description |
-|---|---|
-| `createPool(goal, stake, startTime, dayLength, window, numDays, maxMembers)` | Payable. Creates a pool and enrols the caller. `msg.value` must equal `stake`. Goal length 1–80 bytes. |
-| `joinPool(poolId)` | Payable. Enrol before `startTime − window` with exactly the pool stake. |
-| `submit(poolId, sig)` | Submit the oracle signature for the currently open day. |
-| `cancelUnderfilled(poolId)` | Cancel a pool with fewer than two members after the join deadline. |
-| `settle(poolId)` | Compute winners and payouts once the final window has closed. Permissionless, single use. |
-| `claim(poolId)` | Withdraw a payout or refund. Once per member. |
-| `withdrawFees()` | Transfer accrued fees to the treasury. Permissionless. |
-
-### Views and events
-
-- **Views:** `pools`, `memberState`, `getMembers`, `openDay`, `deadlineOf`, `joinDeadline`, `endTime`, `attestationHash`, `poolCount`, `totalStaked`, `feesAccrued`
-- **Events:** `PoolCreated`, `Joined`, `DayVerified`, `PoolCancelled`, `PoolSettled`, `Claimed`, `FeesWithdrawn`
-
-### Timing
-
-For day `d`, the deadline is `startTime + d × dayLength`. Submissions are accepted between `deadline − window` and `deadline + window`. Constraints: `dayLength ≥ 60` and `2 × window < dayLength`.
-
-## Oracle API
-
-### `POST /api/attest`
-
-Request body:
-
-```json
-{ "poolId": 1, "member": "0x…", "device": {} }
-```
-
-| Status | Meaning |
-|---|---|
-| `200` | `{ "signature": "0x…", "day": 0, "device": null }` |
-| `400` | Invalid `poolId` or `member` |
-| `403` | Address is not a member of the pool |
-| `409` | No open window, or the day is already verified |
-| `500` | Oracle not configured, or key mismatch |
-
-The signature is an EIP-191 `personal_sign` over `attestationHash(poolId, member, day)`.
+`.env.local` is git-ignored. **Never commit the oracle key** and never put real funds in the oracle account.
 
 ## Testing
 
@@ -239,16 +277,18 @@ forge install foundry-rs/forge-std --no-git
 forge test -vv
 ```
 
-The suite contains 18 tests, including a 256-run fuzz test asserting conservation of funds (payouts plus fees equal stakes). Coverage includes:
+The suite has 18 tests, including a fuzz test (256 runs by default) proving money conservation: everything paid out plus fees equals everything staked. It covers:
 
-- forged, replayed and cross-account signatures
-- window boundary conditions
-- duplicate submit, claim and settle attempts
-- refunds for under-filled pools
-- fee cap enforcement
-- rounding remainders
+- Forged, replayed, cross-user and cross-day signatures
+- Window edges and out-of-window submissions
+- Double submit, double claim and double settle
+- Early settlement, under-filled pool cancellation and refunds
+- Join rules (stake, capacity, membership, deadline), parameter validation
+- Fee cap, zero-address checks and rounding dust
 
-The client is validated with `npm run build` (strict TypeScript check and production bundle).
+### Demo pool script
+
+`contracts/scripts/demo-pool.sh` pre-runs a complete 3-day pool with three wallets (one misses day 2). Required environment variables are documented at the top of the file.
 
 ## Deployment
 
@@ -256,72 +296,62 @@ The client is validated with `npm run build` (strict TypeScript check and produc
 
 ```bash
 cd contracts
-ORACLE=0x<oracle-address> TREASURY=0x<treasury-address> FEE_BPS=1000 \
+ORACLE=0x... TREASURY=0x... FEE_BPS=1000 \
 forge script script/Deploy.s.sol:Deploy \
   --rpc-url https://testnet-rpc.monad.xyz \
-  --private-key "$DEPLOYER_KEY" --broadcast
+  --private-key $DEPLOYER_KEY --broadcast
 ```
 
-Set `VITE_POOL_ADDRESS` to the resulting address.
+`ORACLE` is the signer address whose key goes into `ORACLE_PRIVATE_KEY`; `TREASURY` receives fees; `FEE_BPS` is capped at 2000.
 
-### Application (Vercel)
+### Web app and oracle (Vercel)
 
-1. Import the repository and select the Vite framework preset.
-2. Define `ORACLE_PRIVATE_KEY` (and `VITE_POOL_ADDRESS` if redeployed) as environment variables.
-3. Deploy. `api/attest.js` is provisioned automatically as a serverless function.
+1. Import the repository into Vercel (framework auto-detected as Vite).
+2. Set `ORACLE_PRIVATE_KEY` and, if you redeployed the contract, `VITE_POOL_ADDRESS`.
+3. Deploy. The `api/attest.js` function is picked up automatically.
 
-### Demo data
+If `/api/attest` responds "Oracle key does not match contract oracle", the configured key is not the private key of the `oracle` address the contract was deployed with.
 
-`contracts/scripts/demo-pool.sh` runs a complete three-day pool across three funded testnet wallets: two complete every day and one misses day 2, demonstrating a forfeiture and payout.
+## Security model and limitations
 
-```bash
-export RPC=https://testnet-rpc.monad.xyz
-export POOL=0x<contract-address>
-export ORACLE_KEY=0x<oracle-key>
-export PK_A=0x<key> PK_B=0x<key> PK_C=0x<key>
-bash contracts/scripts/demo-pool.sh
-```
+**Guarantees enforced by the contract**
 
-Optional overrides: `DAY` (60), `WINDOW` (20), `DAYS` (3), `STAKE` (wei; default 0.05 MON).
+- Treasury, oracle and fee are immutable; fee is capped at 20%.
+- Stakes can leave only through `claim` (payout or refund) and `withdrawFees` (fees to the fixed treasury).
+- State is updated before external calls in `claim` and `withdrawFees`.
+- Attestations are bound to chain, contract, pool, member and day, and malleable signatures are rejected.
 
-## Security
+**Known limitations**
 
-- **No custodial control.** `oracle`, `treasury` and `feeBps` are immutable; no function can move member stakes.
-- **Replay resistance.** Attestations are bound to chain ID, contract, pool, member and day, and each day can be recorded once.
-- **Signature malleability.** Signatures with upper-half `s` values are rejected.
-- **Pull-based payouts.** Each member withdraws individually; a failing recipient cannot block others.
-- **Permissionless settlement.** No party can withhold a payout by declining to settle.
-- **Trust assumption.** The oracle key holder determines what counts as verified.
+- **The oracle is trusted and mocked.** It signs for any member inside an open window without validating real device data. A production oracle must verify wearable or health-API data (sleep onset, steps) and should be decentralized or attested. A compromised oracle key can forge check-ins for every pool on the contract.
+- `/api/attest` has no rate limiting or authentication beyond on-chain membership checks.
+- Demo days are compressed (60 s); production would use 24 h days with a ±1 h window.
+- The contract has not been audited. **Use on testnet only.**
+- Frontend read patterns (per-member state polling) are fine for demos but not optimized for large pool counts; an indexer would be needed at scale.
 
-This software has not been audited. Do not use it with real funds.
+## Business model
 
-### Reporting a vulnerability
-
-Please report suspected vulnerabilities privately to the maintainers rather than opening a public issue.
-
-## Known Limitations
-
-- The device oracle is a mock. It confirms membership and window state, then signs; it does not validate real device data.
-- Demo pools use 60-second days. A production configuration would use 24-hour days with a window of about one hour.
-- A single oracle key is used and cannot be rotated without redeploying.
-- Deployed to testnet only.
+The protocol takes a fee **only on forfeited stakes** (10% at deploy, hard-capped at 20% in code). Winners never pay, and revenue grows with usage and with failure rate: the app earns when money motivates users, paid for by those who did not follow through. Accrued fees are visible live in the app and withdrawable only to the treasury address fixed at deploy.
 
 ## Roadmap
 
-- Wearable and health-API integrations (Apple Health, Google Fit, Oura)
-- Multi-oracle or threshold attestation with key rotation
-- Recurring pools and invitation links
-- Mobile PWA with reminders
-- Independent security audit
+- Real data sources: Apple Health, Google Fit, Oura for the device oracle
+- Decentralized or multi-signer oracle and per-user device binding
+- Native and PWA check-in experience with reminders
+- Indexer for pool, member and leaderboard queries
+- Third-party audit and mainnet deployment
+- B2B wellness-program pools
 
 ## Contributing
 
-Contributions are welcome. Please open an issue to discuss significant changes before submitting a pull request. Before submitting:
+Issues and pull requests are welcome.
 
-- run `npm run lint` and `npm run build`
-- run `forge test` for any contract change
-- keep changes focused and include tests for behavioural changes
+1. Fork the repository and create a feature branch.
+2. Make focused changes; add or update tests for contract changes (`forge test`) and make sure `npm run build` and `npm run lint` pass.
+3. Open a pull request describing the change and its motivation.
+
+Please report security issues privately to the repository owner rather than in a public issue.
 
 ## License
 
-Released under the MIT License. See `LICENSE`.
+Released under the [MIT License](LICENSE).
