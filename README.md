@@ -8,6 +8,7 @@ Built at **Monad Blitz Pune V3** (10 Oct 2026), idea-board track *Commitment con
 
 | | |
 |---|---|
+| **Live app** | <https://commit-pool-wutn.vercel.app> |
 | **Network** | Monad Testnet (chain ID `10143`) |
 | **Contract** | [`0x59747B1A995EF0Cb01CA6A97CE0aaeA38b2474F4`](https://testnet.monadvision.com/address/0x59747B1A995EF0Cb01CA6A97CE0aaeA38b2474F4) |
 | **Explorer** | <https://testnet.monadvision.com> |
@@ -150,7 +151,7 @@ Binding the chain, contract, pool, member and day prevents cross-chain, cross-co
 
 ### Verification
 
-Source is published on MonadVision via Sourcify (solc 0.8.28, optimizer on / 200 runs, EVM `cancun`). The reproducible compiler input is in [`contracts/verify/CommitPool.standard-input.json`](contracts/verify/CommitPool.standard-input.json).
+Compiler settings: solc 0.8.28, optimizer on / 200 runs, EVM `cancun`. The reproducible Standard-JSON input for verifying the deployed source (e.g. via Sourcify or MonadVision) is in [`contracts/verify/CommitPool.standard-input.json`](contracts/verify/CommitPool.standard-input.json).
 
 ## Device oracle API
 
@@ -252,6 +253,8 @@ Get test MON from <https://faucet.monad.xyz>.
 | `npm run lint` | Lint with oxlint |
 
 ### Try a pool end to end
+
+Use the hosted app at <https://commit-pool-wutn.vercel.app> (no setup beyond a wallet and test MON), or run it locally as above.
 
 1. Connect a wallet and switch to Monad Testnet.
 2. Open **New pledge**; choose *60-second demo days*, 1-3 days, a small stake, first check-in in 2 minutes; sign.
