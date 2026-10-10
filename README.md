@@ -12,6 +12,8 @@ Built at **Monad Blitz Pune V3** (10 Oct 2026), idea-board track *Commitment con
 | **Network** | Monad Testnet (chain ID `10143`) |
 | **Contract** | [`0x59747B1A995EF0Cb01CA6A97CE0aaeA38b2474F4`](https://testnet.monadvision.com/address/0x59747B1A995EF0Cb01CA6A97CE0aaeA38b2474F4) |
 | **Explorer** | <https://testnet.monadvision.com> |
+| **Source** | <https://github.com/atharva-glitch10/commit-pool> |
+| **Posts on X** | [Post 1](https://x.com/AtharvaPaw25/status/2108896348133310637) · [Post 2](https://x.com/AtharvaPaw25/status/2108886990561394875) |
 | **Status** | Hackathon prototype. Testnet only, **not audited** |
 
 ---
@@ -23,6 +25,7 @@ Built at **Monad Blitz Pune V3** (10 Oct 2026), idea-board track *Commitment con
 - [Architecture](#architecture)
 - [Smart contract](#smart-contract)
 - [Device oracle API](#device-oracle-api)
+- [Verification tiers](#verification-tiers)
 - [Frontend](#frontend)
 - [Project structure](#project-structure)
 - [Getting started](#getting-started)
@@ -31,6 +34,7 @@ Built at **Monad Blitz Pune V3** (10 Oct 2026), idea-board track *Commitment con
 - [Deployment](#deployment)
 - [Security model and limitations](#security-model-and-limitations)
 - [Business model](#business-model)
+- [Demo and build in public](#demo-and-build-in-public)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [License](#license)
@@ -362,6 +366,18 @@ If `/api/attest` responds "Oracle key does not match contract oracle", the confi
 ## Business model
 
 The protocol takes a fee **only on forfeited stakes** (10% at deploy, hard-capped at 20% in code). Winners never pay, and revenue grows with usage and with failure rate: the app earns when money motivates users, paid for by those who did not follow through. Accrued fees are visible live in the app and withdrawable only to the treasury address fixed at deploy.
+
+## Demo and build in public
+
+| | |
+|---|---|
+| Live app | <https://commit-pool-wutn.vercel.app> |
+| Contract (Monad Testnet) | [`0x59747B1A995EF0Cb01CA6A97CE0aaeA38b2474F4`](https://testnet.monadvision.com/address/0x59747B1A995EF0Cb01CA6A97CE0aaeA38b2474F4) |
+| Source verification | [Sourcify full match](https://repo.sourcify.dev/10143/0x59747B1A995EF0Cb01CA6A97CE0aaeA38b2474F4) |
+| X post 1 | <https://x.com/AtharvaPaw25/status/2108896348133310637> |
+| X post 2 | <https://x.com/AtharvaPaw25/status/2108886990561394875> |
+
+Built at Monad Blitz Pune V3.
 
 ## Roadmap
 
