@@ -7,16 +7,12 @@ import { allMask, base, clock, deadlineOf, dur, errMsg, mon, toPool, TxLine, use
 import { poolLink } from './router'
 import { Dial } from './ui'
 import { Feed } from './Feed'
-import { HabitPanel } from './HabitPanel'
 import { displayName } from './names'
 
 export function PoolPage({ id }: { id: bigint }) {
   return (
     <div className="poolpage">
-      <div className="poolmain">
-        <PoolPanel id={id} />
-        <HabitPanel id={id} />
-      </div>
+      <PoolPanel id={id} />
       <aside className="side">
         <Invite id={id} />
         <Feed poolId={id} title="This pool, live" />
