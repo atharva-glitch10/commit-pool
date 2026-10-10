@@ -151,7 +151,7 @@ Binding the chain, contract, pool, member and day prevents cross-chain, cross-co
 
 ### Verification
 
-Compiler settings: solc 0.8.28, optimizer on / 200 runs, EVM `cancun`. The reproducible Standard-JSON input for verifying the deployed source (e.g. via Sourcify or MonadVision) is in [`contracts/verify/CommitPool.standard-input.json`](contracts/verify/CommitPool.standard-input.json).
+The deployed source is **verified on Sourcify** with a full (creation + runtime) match: <https://repo.sourcify.dev/10143/0x59747B1A995EF0Cb01CA6A97CE0aaeA38b2474F4>. Compiler settings: solc 0.8.28, optimizer on / 200 runs, EVM `cancun`. The reproducible Standard-JSON input is in [`contracts/verify/CommitPool.standard-input.json`](contracts/verify/CommitPool.standard-input.json).
 
 ## Device oracle API
 
