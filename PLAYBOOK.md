@@ -81,7 +81,7 @@ Use 3 browser profiles (or 3 browsers), each with MetaMask holding a different a
 "We earn only when users fail: a fee on forfeited stakes. Winners pay nothing. Next: real wearable data (Apple Health, Google Fit), then B2B wellness programs."
 
 **2:50–3:00 Say these out loud** (100 basic points depend on it):
-"Repo: github.com/___/commit-pool. Contract: 0x___ on **Monad Testnet**. Live at ___.vercel.app."
+"Repo: github.com/atharva-glitch10/commit-pool. Contract: 0x59747B1A995EF0Cb01CA6A97CE0aaeA38b2474F4 on **Monad Testnet**. Live at commit-pool-wutn.vercel.app."
 
 **Honesty lines** (say them if asked; judges respect them): "The device oracle is mocked for today. A day is 60 seconds for the demo. Not audited."
 
@@ -96,13 +96,13 @@ Post on **X** (and LinkedIn if you have time). Tag **@monad, @monad_dev and @gee
 > Building at #MonadBlitz Pune 🌙 Team ___ is making CommitPool: stake money on your habits (sleep, screen time, steps), your phone proves you did it, and a smart contract on @monad @monad_dev @geeky_kartikey pays the people who follow through. 6 hours. Let's go 🚀
 
 **#2 (contract deployed, add explorer screenshot)**
-> CommitPool contract is live on @monad testnet ✅ No admin key. The oracle, treasury and fee are immutable, so nobody (including us) can touch your stake. 18 tests + fuzzing for money conservation. 0x___
+> CommitPool contract is live on @monad testnet ✅ No admin key. The oracle, treasury and fee are immutable, so nobody (including us) can touch your stake. 18 tests + fuzzing for money conservation. 0x59747B1A995EF0Cb01CA6A97CE0aaeA38b2474F4
 
 **#3 (screen recording, 20–40 s, of the live check-in + feed)**
 > Check-in → on-chain in seconds. Every daily habit check-in is a real transaction on @monad. Watch the live feed 👇 #MonadBlitz
 
 **#4 (before 5:30, the payout screenshot)**
-> Day 3 done. 2 friends finished, 1 skipped a day. The contract paid the finishers automatically and took 10% of the forfeit, only from the person who quit. That's the whole business model. Try it: ___.vercel.app @monad #MonadBlitz
+> Day 3 done. 2 friends finished, 1 skipped a day. The contract paid the finishers automatically and took 10% of the forfeit, only from the person who quit. That's the whole business model. Try it: commit-pool-wutn.vercel.app @monad #MonadBlitz
 
 Ask each teammate to repost and quote, since views count. Short videos get far more views than text.
 
