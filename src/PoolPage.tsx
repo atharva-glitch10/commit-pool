@@ -3,10 +3,11 @@ import { useConnection, useReadContract, useReadContracts } from 'wagmi'
 import QRCode from 'qrcode'
 import { abi } from './abi'
 import { POOL_ADDRESS } from './config'
-import { allMask, base, clock, deadlineOf, dur, errMsg, mon, short, toPool, TxLine, useNow, useTx, type PoolRow } from './lib'
+import { allMask, base, clock, deadlineOf, dur, errMsg, mon, toPool, TxLine, useNow, useTx, type PoolRow } from './lib'
 import { poolLink } from './router'
 import { Dial } from './ui'
 import { Feed } from './Feed'
+import { displayName } from './names'
 
 export function PoolPage({ id }: { id: bigint }) {
   return (
@@ -120,7 +121,7 @@ export function PoolPanel({ id, compact = false }: { id: bigint; compact?: boole
             const missed = Array.from({ length: p.days }, (_, d) => now > deadline(d) + p.win && !(mask & (1 << d))).some(Boolean)
             return (
               <li key={m} className={missed ? 'broke' : mask === all ? 'kept' : ''}>
-                <span className="who">{i === meIdx ? 'You' : short(m)}{m === p.creator && <span className="tag">started it</span>}</span>
+                <span className="who" title={m}>{i === meIdx ? `You (${displayName(m)})` : displayName(m)}{m === p.creator && <span className="tag">started it</span>}</span>
                 <span className="score">{kept}/{p.days} kept{missed ? ', stake forfeited' : mask === all && p.settled ? ', winner' : ''}</span>
               </li>
             )

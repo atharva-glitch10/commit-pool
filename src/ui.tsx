@@ -4,6 +4,7 @@ import { monadTestnet } from 'viem/chains'
 import { EXPLORER, POOL_ADDRESS } from './config'
 import { mon, short } from './lib'
 import { go, type Route } from './router'
+import { displayName } from './names'
 
 export function WalletChip({ next }: { next?: string }) {
   const { address, isConnected, chainId } = useConnection()
@@ -14,7 +15,7 @@ export function WalletChip({ next }: { next?: string }) {
   if (chainId !== monadTestnet.id) return <button className="btn flare" onClick={() => switchChain({ chainId: monadTestnet.id })}>Switch to Monad Testnet</button>
   return (
     <button className="walletchip" onClick={() => disconnect()} title="Disconnect wallet">
-      <span className="dot" aria-hidden />{short(address)}
+      <span className="dot" aria-hidden /><span title={address}>{displayName(address)}</span><span className="addr" title={address}>{short(address)}</span>
       {bal && <span className="bal">{mon(bal.value)} MON</span>}
     </button>
   )

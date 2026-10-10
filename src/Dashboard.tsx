@@ -1,9 +1,10 @@
 import { useConnection, useReadContracts } from 'wagmi'
 import { abi } from './abi'
 import { POOL_ADDRESS } from './config'
-import { allMask, mon, phaseOf, short, useNow, useRecentPools, type PoolRow } from './lib'
+import { allMask, mon, phaseOf, useNow, useRecentPools, type PoolRow } from './lib'
 import { Empty } from './ui'
 import { Feed, Ledger } from './Feed'
+import { displayName } from './names'
 
 function PoolCard({ p, mask, mine }: { p: PoolRow; mask?: number; mine?: boolean }) {
   const now = useNow()
@@ -100,12 +101,12 @@ export function Leaderboard() {
         <p className="lede">Ranked by challenges finished, then days kept, across the last 30 pools. Read straight from the contract.</p>
         {rows.length === 0 ? <Empty title="Nobody has checked in yet." cta={{ label: 'Be the first', to: '#/new' }} /> : (
           <table className="board">
-            <thead><tr><th scope="col">#</th><th scope="col">Wallet</th><th scope="col">Finished</th><th scope="col">Days kept</th><th scope="col">Forfeited</th><th scope="col">Net MON</th></tr></thead>
+            <thead><tr><th scope="col">#</th><th scope="col">Member</th><th scope="col">Finished</th><th scope="col">Days kept</th><th scope="col">Forfeited</th><th scope="col">Net MON</th></tr></thead>
             <tbody>
               {rows.map((r, i) => (
                 <tr key={r.addr} className={address && r.addr.toLowerCase() === address.toLowerCase() ? 'me' : ''}>
                   <td>{i + 1}</td>
-                  <td>{address && r.addr.toLowerCase() === address.toLowerCase() ? 'You' : short(r.addr)}</td>
+                  <td title={r.addr}>{address && r.addr.toLowerCase() === address.toLowerCase() ? `You (${displayName(r.addr)})` : displayName(r.addr)}</td>
                   <td>{r.finished}</td>
                   <td>{r.kept}</td>
                   <td>{r.lost}</td>

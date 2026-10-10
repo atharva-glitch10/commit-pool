@@ -3,6 +3,7 @@ import { useBalance, useConnect, useConnection, useConnectors, useSwitchChain } 
 import { monadTestnet } from 'viem/chains'
 import { errMsg, mon, short } from './lib'
 import { go } from './router'
+import { displayName } from './names'
 
 /** Onboarding: wallet → connect → Monad Testnet → funds → continue. */
 export function Start({ next }: { next?: string }) {
@@ -82,6 +83,7 @@ export function Start({ next }: { next?: string }) {
         {step === 4 && (
           <>
             <p className="ok">All set: <strong>{short(address)}</strong> with {bal ? mon(bal.value) : ''} MON on Monad Testnet.</p>
+            <p className="hint">You’ll appear to others as <strong title={address}>{displayName(address)}</strong>. It’s generated from your wallet, so it’s the same on every device and doesn’t reveal who you are.</p>
             <a className="btn sun big" href={target}>Continue</a>
           </>
         )}
