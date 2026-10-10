@@ -165,16 +165,26 @@ Request body:
 
 | Status | Meaning |
 |---|---|
-| `200` | `{ "signature": "0x...", "day": 0, "device": {...} }` |
+| `200` | `{ "signature": "0x...", "day": 0, "proof": {...}, "device": {...} }` |
 | `400` | Invalid `poolId` or `member` |
 | `403` | Address is not a member of the pool |
 | `409` | No window is open, or the day is already verified |
+| `422` | The member's data for this day does not meet the pool's goal (`error` explains why, `proof` has the numbers) |
 | `405` | Method other than `POST` |
 | `500` | Oracle not configured, key does not match the contract's `oracle`, or RPC error |
 
 The same core (`api/_oracle.js`) runs as a Vercel serverless function in production and as a Vite dev-server middleware locally.
 
 > **The oracle is a mock.** It verifies on-chain state only; it does not inspect real device data. See [limitations](#security-model-and-limitations).
+
+## Habit proof (simulated data)
+
+Each check-in is backed by the member's own data for that day. The pool page shows a **Your proof** card (steps, sleep, phone use, wake-up routine or study focus, depending on the goal), and the oracle signs only if that data meets the goal.
+
+- **Per person, per day.** Data is deterministic and seeded by `wallet:pool:day`, so each wallet gets its own numbers and a refresh never changes history.
+- **Same engine in browser and oracle.** The pure verification engine lives in `src/data/` and is compiled to `api/_data/` by `npm run gen:oracle` so the serverless oracle runs identical logic. A test fails if the generated files go stale.
+- **Supported goals:** sleep/bedtime, phone/scrolling, steps/walking, wake-up/morning routine, study/focus. Other goals are signed without a data check.
+- **Simulated today.** The numbers are generated and labelled `DEMO DATA · SIMULATED`. A real source (Apple Health, Health Connect, Oura) plugs in by implementing `HabitDataProvider` in `src/data/providers.ts`; the engine, oracle and contract do not change.
 
 ## Frontend
 
@@ -197,6 +207,7 @@ Notable behaviour: live event feed with 1 s polling, per-transaction confirmatio
 commit-pool/
 ├── api/
 │   ├── _oracle.js            # Oracle core (shared by Vercel + dev server)
+│   ├── _data/                # Generated JS copy of src/data for the oracle
 │   └── attest.js             # Vercel serverless handler
 ├── contracts/
 │   ├── src/CommitPool.sol    # The contract
@@ -206,6 +217,9 @@ commit-pool/
 │   ├── verify/               # Standard-JSON input for source verification
 │   └── foundry.toml
 ├── src/                      # React application
+│   └── data/                 # Habit records, simulated data, verification engine
+├── tests/                    # Node tests for the data layer
+├── scripts/gen-oracle-data.mjs
 ├── public/                   # Static assets
 ├── PLAYBOOK.md               # Hackathon team playbook
 ├── .env.example
@@ -251,6 +265,8 @@ Get test MON from <https://faucet.monad.xyz>.
 | `npm run build` | Type-check and produce a production build in `dist/` |
 | `npm run preview` | Serve the production build |
 | `npm run lint` | Lint with oxlint |
+| `npm test` | Run the data-layer tests (Node test runner) |
+| `npm run gen:oracle` | Regenerate `api/_data/` after changing `src/data/` |
 
 ### Try a pool end to end
 

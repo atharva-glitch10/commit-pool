@@ -1,10 +1,15 @@
 // Device oracle core — shared by the Vercel function (api/attest.js) and the Vite dev server.
 // MOCK ORACLE: in production this would verify wearable data (Apple Health / Google Fit / Oura)
 // before signing. Here it verifies on-chain that the caller is a member and that today's window
-// is open, then signs the attestation the contract checks with ecrecover.
+// is open, then evaluates that member's SIMULATED habit data for the day against the pool's goal and,
+// only if the data proves it, signs the attestation the contract checks with ecrecover.
 import { createPublicClient, http, parseAbi } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { monadTestnet } from 'viem/chains'
+import { configFromGoal } from './_data/habits.js'
+import { simulateDay } from './_data/demoHealthData.js'
+import { evaluate } from './_data/verification.js'
+import { utcDateKey } from './_data/time.js'
 
 const poolAbi = parseAbi([
   'function memberState(uint256,address) view returns (bool joined, bool claimed, uint32 doneMask)',
@@ -41,8 +46,21 @@ export async function attest({ poolId, member, device }, env) {
   if (!state[0]) return { status: 403, body: { error: 'Not a member of this pool' } }
   if (!open) return { status: 409, body: { error: 'No check-in window is open right now' } }
   if ((state[2] & (1 << day)) !== 0) return { status: 409, body: { error: 'Already verified today' } }
-  // Mock device check: a real oracle would validate `device` (e.g. sleep-onset time, step count) here.
+  // Device check. The member's own simulated data for this pool day is the proof: the oracle signs only if
+// it satisfies the goal. A real oracle would read wearable data here; the simulated feed is the stand-in.
+  const goal = pool[12]
+  const config = configFromGoal(goal)
+  let proof = null
+  if (config) {
+    const date = utcDateKey(start + day * dl)
+    const subject = `${member.toLowerCase()}:${id}:${day}`
+    const v = evaluate(config, simulateDay(config, date, { allowGap: false, subject }))
+    proof = { habit: v.kind, date, status: v.status, measured: v.measured, target: v.target, unit: v.unit, direction: v.direction, explanation: v.explanation, source: v.source }
+    if (v.status !== 'completed') {
+      return { status: 422, body: { error: `Your data doesn’t prove this day: ${v.explanation}`, proof } }
+    }
+  }
   const hash = await client.readContract({ address, abi: poolAbi, functionName: 'attestationHash', args: [id, member, day] })
   const signature = await account.signMessage({ message: { raw: hash } })
-  return { status: 200, body: { signature, day, device: device ?? null } }
+  return { status: 200, body: { signature, day, proof, device: device ?? null } }
 }
