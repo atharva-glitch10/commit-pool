@@ -36,7 +36,8 @@ h1 { font-weight: 850; font-stretch: 125%; font-variation-settings: 'wdth' 125; 
 
 /* ── top bar ── */
 .top { display: flex; align-items: center; gap: 24px; padding: 16px var(--gutter); max-width: 1320px; margin: 0 auto; }
-.mark { font-family: var(--display); font-weight: 800; font-stretch: 140%; font-variation-settings: 'wdth' 140; font-size: 22px; text-decoration: none; }
+.mark { display: inline-flex; align-items: center; gap: 12px; font-family: var(--display); font-weight: 800; font-stretch: 140%; font-variation-settings: 'wdth' 140; font-size: clamp(28px, 3.2vw, 38px); line-height: 1; letter-spacing: -0.02em; text-decoration: none; color: var(--ink); }
+.mark::before { content: ''; width: .78em; height: .78em; border-radius: 50%; background: var(--sun); box-shadow: 0 0 0 3px var(--ink); flex: none; }
 .tabs { display: flex; gap: 4px; margin-left: 8px; }
 .tabs a { text-decoration: none; padding: 8px 14px; border-radius: 999px; font-weight: 550; color: var(--dusk); }
 .tabs a:hover { color: var(--ink); }
@@ -174,7 +175,7 @@ main { padding: 0 var(--gutter); max-width: 1320px; margin: 0 auto; min-height: 
 .templates { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
 .chip { border: 1.5px solid var(--ink); background: transparent; color: var(--ink); border-radius: 999px; padding: 7px 14px; font: 550 14px var(--text); cursor: pointer; }
 .chip.on { background: var(--ink); color: var(--paper); }
-.sentence { font-size: clamp(20px, 2.2vw, 26px); line-height: 2.1; margin: 0 0 8px; max-width: 34em; }
+.sentence { font-size: clamp(22px, 2.6vw, 32px); line-height: 1.9; margin: 0 0 22px; max-width: 34em; }
 .sentence input, .sentence select { font: inherit; color: var(--ink); background: transparent; border: 0; border-bottom: 2.5px solid var(--ink); padding: 0 4px; border-radius: 0; font-weight: 650; }
 .sentence select { cursor: pointer; appearance: none; -webkit-appearance: none; padding-right: 22px; background: linear-gradient(45deg, transparent 50%, var(--ink) 50%) right 8px center / 7px 7px no-repeat, linear-gradient(-45deg, transparent 50%, var(--ink) 50%) right 2px center / 7px 7px no-repeat; }
 .sentence input:focus, .sentence select:focus { outline: none; background-color: var(--sun-soft); }
@@ -285,3 +286,16 @@ footer p { max-width: 80ch; margin: 0; }
 .puzzle input { font: 700 28px var(--text); padding: 10px 14px; border-radius: 12px; border: 2px solid var(--ink); background: #fff; color: var(--ink); width: 8ch; }
 .qr.small { width: 132px; height: 132px; }
 @media (max-width: 640px) { .tiers { grid-template-columns: 1fr; } }
+
+/* ── pledge fields ── */
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 0 0 22px; max-width: 760px; }
+.field { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; background: var(--paper); border-radius: 14px; border: 1.5px solid transparent; cursor: text; }
+.field:focus-within { border-color: var(--ink); }
+.field.wide { grid-column: 1 / -1; }
+.fl { font-size: 13px; font-weight: 600; color: var(--dusk); }
+.fv { display: flex; align-items: baseline; gap: 8px; font-size: 22px; }
+.fv em { font-style: normal; font-size: 15px; color: var(--dusk); }
+.fv input, .fv select { font: inherit; font-weight: 700; color: var(--ink); background: transparent; border: 0; border-bottom: 2px solid var(--track); padding: 2px 4px; border-radius: 0; min-width: 0; }
+.fv input:focus, .fv select:focus { outline: none; border-bottom-color: var(--ink); }
+.fv select { cursor: pointer; width: 100%; }
+.fv .w-num, .fv .w-mid, .fv .w-time { text-align: left; }

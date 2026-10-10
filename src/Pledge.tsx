@@ -112,16 +112,46 @@ export function Pledge() {
 
       <p className="sentence">
         I will <input aria-label="Goal" className="w-goal" value={goal} maxLength={70} onChange={(e) => setGoal(e.target.value)} />
-        {' '}for <select aria-label="Days" value={days} onChange={(e) => setDays(e.target.value)}>{[1, 2, 3, 5, 7, 14, 21, 30].map((d) => <option key={d}>{d}</option>)}</select> days,
-        and I’ll put <input aria-label="Stake in MON" className="w-num" inputMode="decimal" value={stake} onChange={(e) => setStake(e.target.value)} /> MON on it.
-        {' '}Up to <select aria-label="Max members" value={max} onChange={(e) => setMax(e.target.value)}>{[2, 3, 4, 5, 8, 10, 20].map((d) => <option key={d}>{d}</option>)}</select> friends can join me.
-        {tier === 2 && <>{' '}A day counts when my phone or watch records at least <input aria-label="Steps per day" className="w-mid" inputMode="numeric" value={steps} onChange={(e) => setSteps(e.target.value.replace(/\D/g, ''))} /> steps.</>}
-        {tier === 3 && <>{' '}A day counts when my wearable shows I was asleep by <input aria-label="Asleep by" type="time" className="w-time" value={bedBy} onChange={(e) => setBedBy(e.target.value)} /> for at least <input aria-label="Hours of sleep" className="w-num" inputMode="decimal" value={sleepH} onChange={(e) => setSleepH(e.target.value)} /> hours.</>}
-        {isReal
-          ? <>{' '}I’ll check in each day around <input aria-label="Daily check-in time" type="time" className="w-time" value={checkAt} onChange={(e) => setCheckAt(e.target.value)} />.</>
-          : <>{' '}The first check-in is in <input aria-label="Minutes until first check-in" className="w-num" inputMode="numeric" value={startIn} onChange={(e) => setStartIn(e.target.value)} /> minutes,</>}
-        {!realOnly && <>{' '}using <select aria-label="Day length" value={timing} onChange={(e) => setTiming(e.target.value)}>{TIMINGS.filter((x) => tier === 0 || x.v !== '60:20').map((x) => <option key={x.v} value={x.v}>{x.label}</option>)}</select>.</>}
+        {' '}for <select aria-label="Days" value={days} onChange={(e) => setDays(e.target.value)}>{[1, 2, 3, 5, 7, 14, 21, 30].map((d) => <option key={d}>{d}</option>)}</select> days.
       </p>
+
+      <div className="fields">
+        <label className="field"><span className="fl">Stake each</span>
+          <span className="fv"><input aria-label="Stake in MON" className="w-num" inputMode="decimal" value={stake} onChange={(e) => setStake(e.target.value)} /><em>MON</em></span>
+        </label>
+        <label className="field"><span className="fl">Friends who can join</span>
+          <span className="fv"><select aria-label="Max members" value={max} onChange={(e) => setMax(e.target.value)}>{[2, 3, 4, 5, 8, 10, 20].map((d) => <option key={d}>{d}</option>)}</select></span>
+        </label>
+        {tier === 2 && (
+          <label className="field"><span className="fl">Steps per day</span>
+            <span className="fv"><input aria-label="Steps per day" className="w-mid" inputMode="numeric" value={steps} onChange={(e) => setSteps(e.target.value.replace(/\D/g, ''))} /><em>steps</em></span>
+          </label>
+        )}
+        {tier === 3 && (
+          <>
+            <label className="field"><span className="fl">Asleep by</span>
+              <span className="fv"><input aria-label="Asleep by" type="time" className="w-time" value={bedBy} onChange={(e) => setBedBy(e.target.value)} /></span>
+            </label>
+            <label className="field"><span className="fl">Sleep for at least</span>
+              <span className="fv"><input aria-label="Hours of sleep" className="w-num" inputMode="decimal" value={sleepH} onChange={(e) => setSleepH(e.target.value)} /><em>hours</em></span>
+            </label>
+          </>
+        )}
+        {isReal ? (
+          <label className="field"><span className="fl">Daily check-in around</span>
+            <span className="fv"><input aria-label="Daily check-in time" type="time" className="w-time" value={checkAt} onChange={(e) => setCheckAt(e.target.value)} /></span>
+          </label>
+        ) : (
+          <label className="field"><span className="fl">First check-in in</span>
+            <span className="fv"><input aria-label="Minutes until first check-in" className="w-num" inputMode="numeric" value={startIn} onChange={(e) => setStartIn(e.target.value)} /><em>minutes</em></span>
+          </label>
+        )}
+        {!realOnly && (
+          <label className="field wide"><span className="fl">Day length</span>
+            <span className="fv"><select aria-label="Day length" value={timing} onChange={(e) => setTiming(e.target.value)}>{TIMINGS.filter((x) => tier === 0 || x.v !== '60:20').map((x) => <option key={x.v} value={x.v}>{x.label}</option>)}</select></span>
+          </label>
+        )}
+      </div>
 
       <p className="hint fine">
         Friends can join until the first check-in window opens. Each day you have ±{win >= 3600 ? `${win / 3600} hour` : `${win} seconds`} around the check-in time.
