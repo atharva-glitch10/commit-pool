@@ -36,10 +36,10 @@ h1 { font-weight: 850; font-stretch: 125%; font-variation-settings: 'wdth' 125; 
 
 /* ── top bar ── */
 .top { display: flex; align-items: center; gap: 24px; padding: 16px var(--gutter); max-width: 1320px; margin: 0 auto; }
-.mark { display: inline-flex; align-items: center; gap: 12px; font-family: var(--display); font-weight: 800; font-stretch: 140%; font-variation-settings: 'wdth' 140; font-size: clamp(28px, 3.2vw, 38px); line-height: 1; letter-spacing: -0.02em; text-decoration: none; color: var(--ink); }
-.mark::before { content: ''; width: .78em; height: .78em; border-radius: 50%; background: var(--sun); box-shadow: 0 0 0 3px var(--ink); flex: none; }
+.mark { display: inline-flex; align-items: center; gap: 10px; flex: none; white-space: nowrap; font-family: var(--display); font-weight: 800; font-stretch: 120%; font-variation-settings: 'wdth' 120; font-size: 26px; line-height: 1; letter-spacing: -0.01em; text-decoration: none; color: var(--ink); }
+.markicon { width: 34px; height: 34px; flex: none; }
 .tabs { display: flex; gap: 4px; margin-left: 8px; }
-.tabs a { text-decoration: none; padding: 8px 14px; border-radius: 999px; font-weight: 550; color: var(--dusk); }
+.tabs a { white-space: nowrap; text-decoration: none; padding: 8px 14px; border-radius: 999px; font-weight: 550; color: var(--dusk); }
 .tabs a:hover { color: var(--ink); }
 .tabs a[aria-current='page'] { background: var(--ink); color: var(--paper); }
 .topright { margin-left: auto; display: flex; align-items: center; gap: 18px; }

@@ -26,7 +26,13 @@ export function TopBar({ route }: { route: Route }) {
   const here = location.hash.replace(/^#/, '')
   return (
     <header className="top">
-      <a className="mark" href="#/" aria-label="CommitPool home">commitpool</a>
+      <a className="mark" href="#/" aria-label="CommitPool home">
+        <svg className="markicon" viewBox="0 0 32 32" aria-hidden>
+          <circle cx="16" cy="16" r="11" fill="none" stroke="currentColor" strokeWidth="3.5" />
+          <circle cx="24" cy="8.2" r="5" fill="var(--sun)" stroke="currentColor" strokeWidth="2.5" />
+        </svg>
+        <span>commitpool</span>
+      </a>
       {inApp && (
         <nav className="tabs" aria-label="App">
           <a href="#/app" aria-current={route.name === 'app' ? 'page' : undefined}>Pools</a>
