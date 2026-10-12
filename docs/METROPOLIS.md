@@ -56,7 +56,7 @@ The CLI does not run natively on Windows. In `indexer/`: `npm install`, `npm run
 
 Start block 0 enables historical backfill; do not switch to `latest`, because projections need original creation events. If redeploying the pool, update the indexer address and `VITE_POOL_ADDRESS` together. Set `VITE_ENVIO_URL` to the public read-only GraphQL endpoint, never an admin credential, then rebuild.
 
-The query expects generated Hasura `Pool` and `Membership` tables with numeric BigInt fields. Validate that endpoint after deployment: creator membership, new pool, check-in, settlement and claim should agree with the explorer. Linux codegen and live indexing still require validation; projection unit tests alone do not establish deployment.
+The query expects generated Hasura `Pool` and `Membership` tables with numeric BigInt fields. Validate that endpoint after deployment: creator membership, new pool, check-in, settlement and claim should agree with the explorer. Linux CI has passed codegen, handler loading and projection tests. A live GraphQL endpoint and historical indexing have not yet been deployed or verified.
 
 ## Validation
 
@@ -69,6 +69,8 @@ npm run test:browser
 ```
 
 Browser tests use Chromium's virtual PRF authenticator and mocked networks. Node tests cover encryption authentication/recovery, owner/origin binding, signature replay/action substitution/account isolation, and event projections. Run `forge test` separately where Foundry is installed; contract source is unchanged.
+
+Validation performed on 12 October 2026: 27 Node tests, four browser tests, build and lint passed locally; app and indexer jobs passed on GitHub's Linux runners. A live Upstash smoke test using a disposable synthetic account passed encrypted save/list/recovery/delete and replay rejection, with its entry removed afterward. This does not replace real-phone testing, and the exposed REST token must still be rotated before release.
 
 ## Submission evidence
 
