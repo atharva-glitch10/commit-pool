@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=./node_modules/envio/evm.schema.json
 name: commitpool
 description: Public CommitPool activity; private journals are never indexed.
-handler: src/handlers.js
+handlers: src/handlers
 address_format: lowercase
 contracts:
   - name: CommitPool

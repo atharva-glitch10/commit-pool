@@ -29,4 +29,5 @@ jobs:
           node-version: '24'
       - run: npm install
       - run: npm run codegen
+      - run: npm run check:handlers
       - run: npm test
