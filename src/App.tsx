@@ -7,6 +7,7 @@ import { PoolPage } from './PoolPage'
 import { Pledge } from './Pledge'
 import { Feed } from './Feed'
 import { Verification } from './Verification'
+import { Journal } from './Journal'
 
 export default function App() {
   const route = useRoute()
@@ -20,6 +21,7 @@ export default function App() {
         {route.name === 'app' && <Dashboard />}
         {route.name === 'board' && <Leaderboard />}
         {route.name === 'trust' && <Verification />}
+        {route.name === 'journal' && <Journal poolId={route.poolId} />}
         {route.name === 'pool' && <PoolPage id={route.id} key={route.id.toString()} />}
         {route.name === 'new' && (
           <div className="dash">

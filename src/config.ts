@@ -1,10 +1,11 @@
 import { http, createConfig } from 'wagmi'
 import { injected } from 'wagmi/connectors'
 import { monadTestnet } from 'viem/chains'
+import { meraConnector } from './mera'
 
 export const config = createConfig({
   chains: [monadTestnet],
-  connectors: [injected()],
+  connectors: [meraConnector(), injected()],
   transports: { [monadTestnet.id]: http(import.meta.env.VITE_RPC_URL || 'https://testnet-rpc.monad.xyz') },
 })
 

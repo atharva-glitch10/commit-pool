@@ -1,10 +1,12 @@
 # CommitPool
 
-**Stake money on your habits. Your device proves it. Smart contracts pay the people who follow through.**
+**Put money behind showing up. Keep your reflections private. Smart contracts pay the people who follow through.**
 
-CommitPool is a decentralized commitment-contract app built on [Monad](https://monad.xyz). A group of friends each lock the same stake behind a daily goal ("in bed by 23:00"). Every day, each member submits a signed device attestation on-chain inside a time window. Members who complete every day split the stakes of those who didn't. The protocol earns a fee **only** on forfeited stakes; winners never pay.
+CommitPool is a commitment-contract app built on [Monad](https://monad.xyz). Friends lock equal stakes behind a daily challenge. Each member submits a trusted oracle's signed check-in inside a time window. Members who complete every day split forfeited stakes. Basic check-ins prove a tap; wake-up challenges prove timely responsiveness, not sleep. Health-data verification remains beta. The protocol earns a fee **only** on forfeited stakes; winners never pay.
 
 Built at **Monad Blitz Pune V3** (10 Oct 2026), idea-board track *Commitment contracts & accountability pools*.
+
+Metropolis development adds Mera passkey accounts, a separately encrypted journal, and an optional Envio dashboard. See [the deployment and verification checklist](docs/METROPOLIS.md). The existing live URL and videos below describe the Blitz deployment until the new branch is deployed.
 
 | | |
 |---|---|
@@ -247,9 +249,9 @@ commit-pool/
 
 ### Prerequisites
 
-- Node.js 20+ and npm
+- Node.js 24+ and npm (required by the Mera SDK)
 - [Foundry](https://book.getfoundry.sh/getting-started/installation) (only for contract work)
-- A browser wallet such as MetaMask
+- A compatible PRF-enabled passkey authenticator, or a browser wallet such as MetaMask
 
 ### Run the app locally
 
@@ -358,7 +360,7 @@ If `/api/attest` responds "Oracle key does not match contract oracle", the confi
 
 **Known limitations**
 
-- **The oracle is trusted and mocked.** It signs for any member inside an open window without validating real device data. A production oracle must verify wearable or health-API data (sleep onset, steps) and should be decentralized or attested. A compromised oracle key can forge check-ins for every pool on the contract.
+- **The oracle is trusted.** Basic pools sign for any member in the window; Tier 1 requires a timed answer and wallet signature. Tier 2/3 check signed health records but do not establish hardware authenticity. A compromised oracle key can forge check-ins for every pool on the contract. See [verification limits](docs/VERIFICATION.md).
 - `/api/attest` has no rate limiting or authentication beyond on-chain membership checks.
 - Demo days are compressed (60 s); production would use 24 h days with a ±1 h window.
 - The contract has not been audited. **Use on testnet only.**

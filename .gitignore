@@ -11,3 +11,9 @@ companion/node_modules
 companion/.expo
 companion/android
 companion/ios
+playwright-report
+test-results
+tests/artifacts
+indexer/node_modules
+indexer/.envio
+indexer/.env

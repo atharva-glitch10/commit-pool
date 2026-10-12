@@ -5,6 +5,8 @@ import { BaseError, formatEther } from 'viem'
 import { abi } from './abi'
 import { EXPLORER, POOL_ADDRESS } from './config'
 import { parseGoal, type Policy } from './shared'
+import { useQuery } from '@tanstack/react-query'
+import { fetchIndexedPools } from './indexedPools'
 
 export const base = { address: POOL_ADDRESS, abi } as const
 
@@ -110,15 +112,25 @@ export function phaseOf(p: PoolRow, now: number) {
 /** Reads the most recent `n` pools plus their member lists. */
 export function useRecentPools(n = 20) {
   const { data: count } = useReadContract({ ...base, functionName: 'poolCount', query: { refetchInterval: 5000 } })
+  const url = import.meta.env.VITE_ENVIO_URL as string | undefined
+  const index = useQuery({ queryKey: ['indexed-pools', POOL_ADDRESS, url, count?.toString(), n], queryFn: () => fetchIndexedPools(url!, count!, n), enabled: !!url && count !== undefined, refetchInterval: 5000, retry: false })
+  const expected = count === undefined ? 0 : Math.min(n, Number(count))
+  const indexed = !!index.data && !index.isError && index.data.Pool.length === expected && (count === 0n || BigInt(index.data.Pool[0]?.poolId ?? '-1') === count)
   const ids = count ? Array.from({ length: Math.min(n, Number(count)) }, (_, i) => count - BigInt(i)) : []
   const { data: rows } = useReadContracts({
     contracts: ids.flatMap((id) => [{ ...base, functionName: 'pools', args: [id] } as const, { ...base, functionName: 'getMembers', args: [id] } as const]),
-    query: { enabled: ids.length > 0, refetchInterval: 5000 },
+    query: { enabled: ids.length > 0 && !indexed, refetchInterval: indexed ? false : 5000 },
   })
   const pools = ids.map((id, i) => {
     const p = rows?.[i * 2]?.result as readonly unknown[] | undefined
     const m = rows?.[i * 2 + 1]?.result as readonly `0x${string}`[] | undefined
     return p ? { pool: toPool(id, p), members: m ?? [] } : null
   }).filter(Boolean) as { pool: PoolRow; members: readonly `0x${string}`[] }[]
-  return { count, pools }
+  const memberStates = new Map<string, readonly [boolean, boolean, number]>()
+  if (indexed) {
+    for (const m of index.data!.Membership) memberStates.set(`${m.poolId}:${m.member.toLowerCase()}`, [true, m.claimed, m.doneMask])
+    const indexedRows = index.data!.Pool.map(p => ({ pool: toPool(BigInt(p.poolId), [p.creator, BigInt(p.stake), BigInt(p.startTime), p.dayLength, p.window, p.numDays, p.maxMembers, p.memberCount, p.winners, p.settled, p.cancelled, BigInt(p.payout), p.goal]), members: p.members }))
+    return { count, pools: indexedRows, source: 'envio' as const, memberStates }
+  }
+  return { count, pools, source: 'rpc' as const, memberStates }
 }
