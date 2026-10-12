@@ -109,6 +109,7 @@ export function Pledge() {
           )
         })}
       </fieldset>
+      {tier === 1 && <p className="hint fine">A wake-up ring verifies that someone controlling your account answered in time. It cannot prove sleep, bedtime, or that a device was put away.</p>}
 
       <p className="sentence">
         I will <input aria-label="Goal" className="w-goal" value={goal} maxLength={70} onChange={(e) => setGoal(e.target.value)} />

@@ -13,6 +13,20 @@
   --gutter: clamp(16px, 4vw, 48px);
   color-scheme: light;
 }
+
+.journal { max-width: 800px; margin: 24px auto; padding: 24px var(--gutter) 48px; }
+.journal .eyebrow { font-weight: 650; color: var(--dusk); text-transform: uppercase; font-size: 12px; letter-spacing: .12em; }
+.journal-privacy { background: var(--ink); color: var(--paper); border-radius: 20px; padding: 20px; margin: 24px 0; }
+.journal-privacy p { margin: 8px 0 0; font-size: 15px; }
+.journal-toolbar { margin: 20px 0; flex-wrap: wrap; }
+.journal-form, .journal-entry { background: var(--paper); border: 1px solid var(--track); border-radius: 20px; padding: 24px; margin: 20px 0; }
+.journal-form label { display: grid; gap: 8px; margin-bottom: 20px; font-weight: 600; }
+.journal-form input, .journal-form textarea { width: 100%; border: 1.5px solid var(--track); border-radius: 12px; background: #fff; padding: 12px; font: inherit; color: var(--ink); }
+.journal-form input { max-width: 180px; }
+.journal-form textarea { resize: vertical; }
+.journal-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.journal-toolbar .hint.fine { margin-top: 0; }
+@media (max-width: 900px) { .top { flex-wrap: wrap; } .tabs { flex-wrap: wrap; order: 3; width: 100%; margin-left: 0; } .tabs a { padding: 7px 10px; font-size: 14px; } }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { margin: 0; background: var(--sky); color: var(--ink); font-family: var(--text); font-size: 17px; line-height: 1.55; -webkit-font-smoothing: antialiased; }

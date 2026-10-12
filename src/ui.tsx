@@ -38,6 +38,7 @@ export function TopBar({ route }: { route: Route }) {
           <a href="#/app" aria-current={route.name === 'app' ? 'page' : undefined}>Pools</a>
           <a href="#/new" aria-current={route.name === 'new' ? 'page' : undefined}>New pledge</a>
           <a href="#/leaderboard" aria-current={route.name === 'board' ? 'page' : undefined}>Leaderboard</a>
+          <a href="#/journal" aria-current={route.name === 'journal' ? 'page' : undefined}>Private journal</a>
           <a href="#/trust" aria-current={route.name === 'trust' ? 'page' : undefined}>How it’s verified</a>
         </nav>
       )}

@@ -25,7 +25,7 @@ export function Landing() {
             <a className="btn sun big" href="#/start?next=%2Fnew">Make a pledge</a>
             {latest && <a className="textlink" href={`#/pool/${latest}`}>Watch a live pool</a>}
           </div>
-          <p className="hint fine">Free to try on Monad Testnet. You need a browser wallet like MetaMask.</p>
+          <p className="hint fine">Free to try on Monad Testnet. Use a passkey or an existing browser wallet. Test MON has no real-world value.</p>
         </div>
         <div className="stage">
           {latest ? <PoolPanel id={latest} compact /> : <div className="pool"><DemoDial /></div>}
@@ -37,18 +37,18 @@ export function Landing() {
         <h2 className="h2">How it works</h2>
         <ol className="steps">
           <li><strong>Lock a stake.</strong> Everyone in the pool puts in the same amount of MON. It sits in the contract; nobody, including us, can take it out early.</li>
-          <li><strong>Prove it every day.</strong> Depending on the pool: tap in the window, answer a wake-up ring at a random moment, or send steps or sleep your phone or watch recorded. The contract verifies the oracle’s signature. A friend can’t do it for you.</li>
+          <li><strong>Check in every day.</strong> Tap in the window or answer a timed wake-up challenge. The challenge proves a timely response from the member’s account, not sleep. Health-data pools need the beta companion app. The contract verifies the trusted oracle’s signature.</li>
           <li><strong>Get paid for following through.</strong> When the last day ends, anyone can trigger the payout. People who kept every day split the stakes of those who didn’t.</li>
         </ol>
       </section>
 
       <section className="band split">
         <div>
-          <h2 className="h2">Built so nobody can cheat</h2>
+          <h2 className="h2">Rules everyone can inspect</h2>
           <dl className="facts">
             <div><dt>No admin key</dt><dd>The oracle, the treasury and the fee are fixed when the contract is deployed. There is no function that moves members’ stakes except the payout rules.</dd></div>
             <div><dt>Check-ins can’t be replayed</dt><dd>Each signature is bound to this chain, this contract, this pool, your address and that one day. Reusing it anywhere else fails.</dd></div>
-            <div><dt>Everything is public</dt><dd>Every join, check-in and payout is a transaction you can open on the <a href={`${EXPLORER}/address/${POOL_ADDRESS}`} target="_blank" rel="noreferrer">explorer</a>.</dd></div>
+            <div><dt>Public outcomes, private reflections</dt><dd>Joins, check-ins and payouts are visible on the <a href={`${EXPLORER}/address/${POOL_ADDRESS}`} target="_blank" rel="noreferrer">explorer</a>. Your <a href="#/journal">journal</a> is encrypted with a separate passkey-derived key.</dd></div>
           </dl>
           <p className="hint fine"><a href="#/trust">How each verification tier works, and what isn’t solved yet</a></p>
         </div>

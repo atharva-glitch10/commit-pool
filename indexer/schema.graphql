@@ -1,0 +1,47 @@
+type Pool {
+  id: ID!
+  poolId: BigInt!
+  chainId: Int!
+  contract: String!
+  creator: String!
+  goal: String!
+  stake: BigInt!
+  startTime: BigInt!
+  dayLength: Int!
+  window: Int!
+  numDays: Int!
+  maxMembers: Int!
+  members: [String!]!
+  memberCount: Int!
+  winners: Int!
+  settled: Boolean!
+  cancelled: Boolean!
+  payout: BigInt!
+  fee: BigInt!
+  createdAt: BigInt!
+}
+
+type Membership {
+  id: ID!
+  poolId: BigInt!
+  poolKey: String!
+  chainId: Int!
+  contract: String!
+  member: String!
+  doneMask: Int!
+  claimed: Boolean!
+}
+
+type Activity {
+  id: ID!
+  poolId: BigInt!
+  chainId: Int!
+  contract: String!
+  kind: String!
+  member: String
+  day: Int
+  amount: BigInt
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  txHash: String!
+}

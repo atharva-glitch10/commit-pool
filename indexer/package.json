@@ -1,0 +1,5 @@
+{
+  "name": "commitpool-indexer", "private": true, "type": "module",
+  "scripts": { "codegen": "envio codegen", "dev": "envio dev", "start": "envio start", "test": "node --test src/projection.test.mjs" },
+  "dependencies": { "envio": "3.14.0" }
+}

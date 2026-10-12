@@ -17,6 +17,7 @@ export function PoolPage({ id }: { id: bigint }) {
       <PoolPanel id={id} />
       <aside className="side">
         <Invite id={id} />
+        <section className="invite"><h3>Your private reflection</h3><p className="hint">Keep your reasons and reflections encrypted with your passkey.</p><a className="btn ghost" href={`#/journal?pool=${id}`}>Open journal</a></section>
         <Feed poolId={id} title="This pool, live" />
       </aside>
     </div>

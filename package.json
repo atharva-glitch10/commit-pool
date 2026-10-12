@@ -7,11 +7,15 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "test": "node --test api/_oracle.test.mjs",
+    "test": "node --test api/_oracle.test.mjs api/_journal.test.mjs src/journalCrypto.test.ts indexer/src/projection.test.mjs",
     "preview": "vite preview",
-    "test:oracle": "node --test api/_oracle.test.mjs"
+    "test:oracle": "node --test api/_oracle.test.mjs",
+    "test:browser": "playwright test",
+    "test:journal": "node --test api/_journal.test.mjs src/journalCrypto.test.ts",
+    "test:indexer": "node --test indexer/src/projection.test.mjs"
   },
   "dependencies": {
+    "@category-labs/mera": "^0.2.0",
     "@fontsource-variable/anybody": "^5.3.0",
     "@fontsource-variable/instrument-sans": "^5.3.0",
     "@tanstack/react-query": "^5.104.1",
@@ -23,6 +27,7 @@
     "wagmi": "^3.7.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.0",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
@@ -30,5 +35,8 @@
     "oxlint": "^1.81.0",
     "typescript": "~6.0.2",
     "vite": "^8.3.0"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }

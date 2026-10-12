@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=./node_modules/envio/evm.schema.json
+name: commitpool
+description: Public CommitPool activity; private journals are never indexed.
+handler: src/handlers.js
+address_format: lowercase
+contracts:
+  - name: CommitPool
+    events:
+      - event: PoolCreated(uint256 indexed poolId, address indexed creator, string goal, uint256 stake, uint64 startTime, uint32 dayLength, uint32 window, uint8 numDays, uint8 maxMembers)
+      - event: Joined(uint256 indexed poolId, address indexed member)
+      - event: DayVerified(uint256 indexed poolId, address indexed member, uint8 day, uint256 timestamp)
+      - event: PoolCancelled(uint256 indexed poolId)
+      - event: PoolSettled(uint256 indexed poolId, uint8 winners, uint256 payout, uint256 fee)
+      - event: Claimed(uint256 indexed poolId, address indexed member, uint256 amount)
+chains:
+  - id: 10143
+    start_block: 0
+    contracts:
+      - name: CommitPool
+        address: '0x59747b1a995ef0cb01ca6a97ce0aaea38b2474f4'

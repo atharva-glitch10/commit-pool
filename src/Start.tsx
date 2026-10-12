@@ -1,14 +1,16 @@
 import { useEffect } from 'react'
-import { useBalance, useConnect, useConnection, useConnectors, useSwitchChain } from 'wagmi'
+import { useBalance, useConnect, useConnection, useConnectors, useSwitchChain, useDisconnect } from 'wagmi'
 import { monadTestnet } from 'viem/chains'
 import { errMsg, mon, short } from './lib'
 import { go } from './router'
 import { displayName } from './names'
+import { hasSavedPasskey, passkeySupported, setPasskeyIntent } from './mera'
 
 /** Onboarding: wallet → connect → Monad Testnet → funds → continue. */
 export function Start({ next }: { next?: string }) {
   const hasWallet = typeof window !== 'undefined' && !!(window as { ethereum?: unknown }).ethereum
-  const { address, isConnected, chainId } = useConnection()
+  const { address, isConnected, chainId, connector } = useConnection()
+  const { mutateAsync: disconnect } = useDisconnect()
   const connectors = useConnectors()
   const { mutate: connect, error: connErr, isPending: connecting } = useConnect()
   const { mutate: switchChain, error: switchErr, isPending: switching } = useSwitchChain()
@@ -17,7 +19,8 @@ export function Start({ next }: { next?: string }) {
   const funded = !!bal && bal.value > 0n
   const target = next && next.startsWith('/') ? `#${next}` : '#/app'
 
-  const step = !hasWallet ? 0 : !isConnected ? 1 : !onMonad ? 2 : !funded ? 3 : 4
+  const needsPasskey = next?.startsWith('/journal') && connector?.id !== 'mera'
+  const step = !isConnected || needsPasskey ? 1 : !onMonad ? 2 : !funded ? 3 : 4
   useEffect(() => {
     if (step === 4) {
       const t = setTimeout(() => go(target), 900)
@@ -25,11 +28,18 @@ export function Start({ next }: { next?: string }) {
     }
   }, [step, target])
 
-  const steps = ['Get a wallet', 'Connect it', 'Use Monad Testnet', 'Get test MON']
+  const steps = ['Choose an account', 'Connect it', 'Use Monad Testnet', 'Get test MON']
+  async function connectPasskey(mode: 'create' | 'unlock') {
+    const connector = connectors.find(c => c.id === 'mera')
+    if (!connector) return
+    setPasskeyIntent(mode)
+    if (isConnected) await disconnect()
+    connect({ connector })
+  }
   return (
     <section className="start">
       <h1 className="h2">Let’s get you ready</h1>
-      <p className="lede">Four quick checks. The page moves on by itself when each one is done.</p>
+      <p className="lede">Use a passkey on your phone or connect an existing wallet. Test MON has no real-world value.</p>
       <ol className="wizard">
         {steps.map((s, i) => (
           <li key={s} className={i < step ? 'done' : i === step ? 'now' : ''} aria-current={i === step ? 'step' : undefined}>
@@ -40,16 +50,20 @@ export function Start({ next }: { next?: string }) {
       </ol>
 
       <div className="wizbody">
-        {step === 0 && (
-          <>
-            <p>CommitPool works with MetaMask or any browser wallet. Install it, create a wallet, then come back to this page.</p>
-            <a className="btn ink big" href="https://metamask.io/download/" target="_blank" rel="noreferrer">Install MetaMask</a>
-          </>
-        )}
         {step === 1 && (
           <>
-            <p>Your wallet holds your stake and signs your check-ins. We never hold your keys.</p>
-            <button className="btn sun big" disabled={connecting} onClick={() => connect({ connector: connectors[0] })}>{connecting ? 'Check your wallet…' : 'Connect wallet'}</button>
+            <h2 className="h3">Your account, one passkey</h2>
+            <p>Create an account with your device’s passkey prompt. No browser extension is needed. Your signing session lasts 15 minutes; each signature or transaction asks for your approval.</p>
+            <div className="row2">
+              <button className="btn sun big" disabled={connecting || !passkeySupported()} onClick={() => connectPasskey('create')}>{connecting ? 'Check your device…' : 'Create a passkey account'}</button>
+              <button className="btn ghost" disabled={connecting || !passkeySupported()} onClick={() => connectPasskey('unlock')}>{hasSavedPasskey() ? 'Unlock my passkey' : 'I already have a passkey'}</button>
+            </div>
+            <p className="hint fine">Creating another passkey creates another account. To recover an account, select its existing passkey at this same website. Keep access to that passkey; we cannot recover it for you.</p>
+            {!passkeySupported() && <p className="txline err">This browser needs HTTPS or localhost and passkey support. An existing wallet is still available below.</p>}
+            <details className="manual"><summary>Use an existing browser wallet</summary>
+              <p>This keeps your existing wallet address. The encrypted journal currently requires a Mera passkey account.</p>
+              {hasWallet || connectors.some(c => c.id !== 'mera') ? <button className="btn ink" disabled={connecting} onClick={() => { const connector = connectors.find(c => c.id !== 'mera'); if (connector) connect({ connector }) }}>Connect browser wallet</button> : <a className="btn ink" href="https://metamask.io/download/" target="_blank" rel="noreferrer">Get a browser wallet</a>}
+            </details>
             {connErr && <p className="txline err">{errMsg(connErr)}</p>}
           </>
         )}
@@ -77,7 +91,7 @@ export function Start({ next }: { next?: string }) {
               <a className="btn sun big" href="https://faucet.monad.xyz" target="_blank" rel="noreferrer">Open the faucet</a>
               <button className="btn ghost" onClick={() => navigator.clipboard?.writeText(address ?? '')}>Copy my address</button>
             </div>
-            <p className="hint fine"><a href={target}>Skip for now</a>. You can look around without MON; you’ll need it to join or start a pool.</p>
+            <p className="hint fine"><a href={target}>Continue without funds</a>. You can use your private journal and look around without MON; joining a pool requires the stake plus network fees.</p>
           </>
         )}
         {step === 4 && (
