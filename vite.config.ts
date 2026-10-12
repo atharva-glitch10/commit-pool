@@ -25,6 +25,21 @@ function oracleDevApi(env: Record<string, string>): Plugin {
       })
       route('/api/attest', 'attest')
       route('/api/challenge', 'challenge')
+      server.middlewares.use('/api/journal', (req, res) => {
+        res.setHeader('Cache-Control', 'no-store')
+        if (req.method !== 'POST') { res.statusCode = 405; res.end(JSON.stringify({ error: 'POST only' })); return }
+        let raw = ''
+        req.on('data', c => { raw += c; if (raw.length > 32000) req.destroy() })
+        req.on('end', async () => {
+          res.setHeader('content-type', 'application/json')
+          try {
+            // @ts-expect-error plain JS module
+            const { journal } = await import('./api/_journal.js')
+            const result = await journal(JSON.parse(raw || '{}'), env, req.headers.origin)
+            res.statusCode = result.status; res.end(JSON.stringify(result.body))
+          } catch { res.statusCode = 400; res.end(JSON.stringify({ error: 'Invalid journal request.' })) }
+        })
+      })
     },
   }
 }
